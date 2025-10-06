@@ -8,6 +8,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
+import static java.util.Arrays.copyOfRange;
+
 public class Main {
 
   static final File root = new File(".git");
@@ -97,7 +99,7 @@ public class Main {
 
         var objectFile = new File(objectDir, filename);
         var objectContent =
-            String.format("blob %d%s", file.length(), Files.readString(file.toPath()));
+            String.format("blob %d\u0000%s", file.length(), Files.readString(file.toPath()));
         var compressedContent = ZlibCompressor.compress(objectContent.getBytes());
         Files.write(objectFile.toPath(), compressedContent);
 
@@ -147,6 +149,12 @@ public class Main {
       try {
         byte[] compressedContent = Files.readAllBytes(objectFile.toPath());
         byte[] objectContent = ZlibCompressor.decompress(compressedContent);
+        for (int i = 0; i < objectContent.length; i++) {
+          if (objectContent[i] == 0) {
+            objectContent = copyOfRange(objectContent, i + 1, objectContent.length);
+            break;
+          }
+        }
         System.out.print(new String(objectContent));
       } catch (IOException e) {
         System.err.println("Error reading object: " + hash);
