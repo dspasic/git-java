@@ -8,8 +8,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
-import static java.util.Arrays.copyOfRange;
-
 public class Main {
 
   static final File root = new File(".git");
@@ -24,16 +22,22 @@ public class Main {
       case "init" -> {
         var cmd = new InitCommand();
         cmd.execute(args);
+        System.exit(0);
       }
       case "hash-object" -> {
         var cmd = new HashObjectCommand();
         cmd.execute(args);
+        System.exit(0);
       }
       case "cat-file" -> {
         var cmd = new CatFileCommand();
         cmd.execute(args);
+        System.exit(0);
       }
-      default -> System.out.println("Unknown command: " + command);
+      default -> {
+        System.err.println("Unknown command: " + command);
+        System.exit(1);
+      }
     }
   }
 
@@ -48,9 +52,11 @@ public class Main {
       if (!objects.exists()) {
         objects.mkdirs();
       } else {
-        System.out.println("Reinitialized existing Git repository in " + root.getAbsolutePath());
+        System.err.println("Reinitialized existing Git repository in " + root.getAbsolutePath());
+        System.exit(1);
         return;
       }
+
       if (!refs.exists()) {
         refs.mkdirs();
       }
@@ -148,14 +154,8 @@ public class Main {
 
       try {
         byte[] compressedContent = Files.readAllBytes(objectFile.toPath());
-        byte[] objectContent = ZlibCompressor.decompress(compressedContent);
-        for (int i = 0; i < objectContent.length; i++) {
-          if (objectContent[i] == 0) {
-            objectContent = copyOfRange(objectContent, i + 1, objectContent.length);
-            break;
-          }
-        }
-        System.out.print(new String(objectContent));
+        String objectContent = new String(ZlibCompressor.decompress(compressedContent));
+        System.out.print(objectContent.substring(objectContent.indexOf(0x00) + 1));
       } catch (IOException e) {
         System.err.println("Error reading object: " + hash);
         System.err.println("Error: " + e.getMessage());
@@ -181,25 +181,24 @@ public class Main {
   static class ZlibCompressor {
 
     public static byte[] compress(byte[] data) throws IOException {
-      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-      try (DeflaterOutputStream deflaterOutputStream =
-          new DeflaterOutputStream(byteArrayOutputStream)) {
+      var baos = new ByteArrayOutputStream();
+      try (DeflaterOutputStream deflaterOutputStream = new DeflaterOutputStream(baos)) {
         deflaterOutputStream.write(data);
       }
-      return byteArrayOutputStream.toByteArray();
+      return baos.toByteArray();
     }
 
     public static byte[] decompress(byte[] data) throws IOException {
-      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+      var baos = new ByteArrayOutputStream();
       try (InflaterInputStream inflaterInputStream =
           new InflaterInputStream(new ByteArrayInputStream(data))) {
         byte[] buffer = new byte[8192];
         int len;
         while ((len = inflaterInputStream.read(buffer)) != -1) {
-          byteArrayOutputStream.write(buffer, 0, len);
+          baos.write(buffer, 0, len);
         }
       }
-      return byteArrayOutputStream.toByteArray();
+      return baos.toByteArray();
     }
   }
 }
