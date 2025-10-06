@@ -41,6 +41,7 @@ public class Main {
   }
 
   static class InitCommand implements Command {
+
     @Override
     public void execute(String[] args) {
       if (!objects.exists()) {
@@ -64,9 +65,9 @@ public class Main {
   }
 
   static class HashObjectCommand implements Command {
+
     @Override
     public void execute(String[] args) {
-      System.out.println(Arrays.toString(args));
       if (args.length < 3) {
         System.out.println("Usage: hash-object -w <file>");
         System.exit(1);
@@ -97,7 +98,7 @@ public class Main {
 
         var objectFile = new File(objectDir, filename);
         var objectContent =
-            String.format("blob %d\0%s", file.length(), Files.readString(file.toPath()));
+            String.format("blob %d\\0%s", file.length(), Files.readString(file.toPath()));
         var compressedContent = ZlibCompressor.compress(objectContent.getBytes());
         Files.write(objectFile.toPath(), compressedContent);
 
@@ -115,9 +116,9 @@ public class Main {
   }
 
   static class CatFileCommand implements Command {
+
     @Override
     public void execute(String[] args) {
-      System.out.println(Arrays.toString(args));
       if (args.length < 3) {
         System.out.println("Usage: cat-file -p <hash>");
         System.exit(1);
@@ -157,6 +158,7 @@ public class Main {
   }
 
   static class HashGenerator {
+
     public static String generateHash(File file) throws NoSuchAlgorithmException, IOException {
       var digest = MessageDigest.getInstance("SHA-1");
       byte[] fileBytes = Files.readAllBytes(file.toPath());
@@ -170,6 +172,7 @@ public class Main {
   }
 
   static class ZlibCompressor {
+
     public static byte[] compress(byte[] data) throws IOException {
       ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
       try (DeflaterOutputStream deflaterOutputStream =
