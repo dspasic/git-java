@@ -98,7 +98,7 @@ public class Main {
 
         var objectFile = new File(objectDir, filename);
         var objectContent =
-            String.format("blob %d\\0%s", file.length(), Files.readString(file.toPath()));
+            String.format("blob %d\0%s", file.length(), Files.readString(file.toPath()));
         var compressedContent = ZlibCompressor.compress(objectContent.getBytes());
         Files.write(objectFile.toPath(), compressedContent);
 
