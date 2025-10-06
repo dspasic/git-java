@@ -94,7 +94,11 @@ public class Main {
       }
 
       try {
-        var hash = HashGenerator.generateHash(file);
+        var objectContent =
+            String.format("blob %d\u0000%s", file.length(), Files.readString(file.toPath()))
+                .getBytes();
+
+        var hash = HashGenerator.generateHash(objectContent);
         var dirname = hash.substring(0, 2);
         var filename = hash.substring(2);
 
@@ -102,11 +106,9 @@ public class Main {
         if (!objectDir.exists()) {
           objectDir.mkdirs();
         }
-
         var objectFile = new File(objectDir, filename);
-        var objectContent =
-            String.format("blob %d\u0000%s", file.length(), Files.readString(file.toPath()));
-        var compressedContent = ZlibCompressor.compress(objectContent.getBytes());
+
+        var compressedContent = ZlibCompressor.compress(objectContent);
         Files.write(objectFile.toPath(), compressedContent);
 
         System.out.print(hash);
@@ -166,10 +168,9 @@ public class Main {
 
   static class HashGenerator {
 
-    public static String generateHash(File file) throws NoSuchAlgorithmException, IOException {
+    public static String generateHash(byte[] data) throws NoSuchAlgorithmException, IOException {
       var digest = MessageDigest.getInstance("SHA-1");
-      byte[] fileBytes = Files.readAllBytes(file.toPath());
-      byte[] hashBytes = digest.digest(fileBytes);
+      byte[] hashBytes = digest.digest(data);
       StringBuilder sb = new StringBuilder();
       for (byte b : hashBytes) {
         sb.append(String.format("%02x", b));
