@@ -15,7 +15,7 @@ public class Main {
   static final File root = new File(".git");
   static final File objects = new File(root, "objects");
   static final File refs = new File(root, "refs");
-  static final File head = new File(refs, "HEAD");
+  static final File head = new File(root, "HEAD");
 
   public static void main(String[] args) {
     final String command = args[0];
