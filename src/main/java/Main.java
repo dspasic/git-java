@@ -17,28 +17,35 @@ public class Main {
 
   public static void main(String[] args) {
     final String command = args[0];
+    int exitCode = 0;
 
     switch (command) {
       case "init" -> {
         var cmd = new InitCommand();
         cmd.execute(args);
-        System.exit(0);
       }
       case "hash-object" -> {
         var cmd = new HashObjectCommand();
         cmd.execute(args);
-        System.exit(0);
       }
       case "cat-file" -> {
         var cmd = new CatFileCommand();
         cmd.execute(args);
-        System.exit(0);
+      }
+      case "help" -> {
+        System.out.println("Usage: git <command> [<args>]");
+        System.out.println("Available commands:");
+        System.out.println("  init");
+        System.out.println("  hash-object -w <file>");
+        System.out.println("  cat-file -p <hash>");
       }
       default -> {
         System.err.println("Unknown command: " + command);
-        System.exit(1);
+        exitCode = 1;
       }
     }
+
+    System.exit(exitCode);
   }
 
   interface Command {
@@ -54,7 +61,6 @@ public class Main {
       } else {
         System.err.println("Reinitialized existing Git repository in " + root.getAbsolutePath());
         System.exit(1);
-        return;
       }
 
       if (!refs.exists()) {
@@ -181,6 +187,8 @@ public class Main {
 
   static class ZlibCompressor {
 
+    final static int BUFFER_SIZE = 8192;
+
     public static byte[] compress(byte[] data) throws IOException {
       var baos = new ByteArrayOutputStream();
       try (DeflaterOutputStream deflaterOutputStream = new DeflaterOutputStream(baos)) {
@@ -193,7 +201,7 @@ public class Main {
       var baos = new ByteArrayOutputStream();
       try (InflaterInputStream inflaterInputStream =
           new InflaterInputStream(new ByteArrayInputStream(data))) {
-        byte[] buffer = new byte[8192];
+        byte[] buffer = new byte[BUFFER_SIZE];
         int len;
         while ((len = inflaterInputStream.read(buffer)) != -1) {
           baos.write(buffer, 0, len);
