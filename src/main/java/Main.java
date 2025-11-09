@@ -32,6 +32,10 @@ public class Main {
         var cmd = new CatFileCommand();
         cmd.execute(args);
       }
+      case "ls-tree" -> {
+        var cmd = new LsTreeCommand();
+        cmd.execute(args);
+      }
       case "help" -> {
         System.out.println("Usage: git <command> [<args>]");
         System.out.println("Available commands:");
