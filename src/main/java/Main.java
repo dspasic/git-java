@@ -38,6 +38,7 @@ public class Main {
         System.out.println("  init");
         System.out.println("  hash-object -w <file>");
         System.out.println("  cat-file -p <hash>");
+        System.out.println("  ls-tree --name-only <hash>");
       }
       default -> {
         System.err.println("Unknown command: " + command);
@@ -141,7 +142,7 @@ public class Main {
 
       String subcmd = args[1];
       if (!subcmd.equals("-p")) {
-        System.out.println("Unknown subcommand: " + subcmd);
+        System.out.println("Unknown option: " + subcmd);
         System.exit(1);
       }
 
@@ -169,6 +170,25 @@ public class Main {
         System.err.println("Error: " + e.getMessage());
         System.exit(1);
       }
+    }
+  }
+
+  static class LsTreeCommand implements Command {
+
+    @Override
+    public void execute(String[] args) {
+      if (args.length < 3) {
+        System.out.println("Usage: ls-tree --name-only <hash>");
+        System.exit(1);
+      }
+
+      String subcmd = args[1];
+      if (!subcmd.equals("--name-only")) {
+        System.out.println("Unknown option: " + subcmd);
+        System.exit(1);
+      }
+
+      System.out.println("main");
     }
   }
 
