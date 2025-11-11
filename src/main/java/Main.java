@@ -213,7 +213,7 @@ public class Main {
           var endIndex = determineEndIndex(namePosition, content);
           var sha = content.substring(namePosition + 1, endIndex);
 
-          System.out.printf("%s %s %s\n", number, name, sha);
+          System.out.printf("%s\n", name);
           pos = endIndex;
         }
       } catch (IOException | IllegalArgumentException e) {
@@ -252,8 +252,6 @@ public class Main {
       }
       return endIndex;
     }
-
-
   }
 
   static class GitObject {
