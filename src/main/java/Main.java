@@ -224,7 +224,7 @@ public class Main {
     }
 
     private static int determineEndIndex(int namePosition, String content) {
-      return 20;
+      return namePosition + 20;
 //      var byteLimit = 20;
 //      var utf8Bytes = 0;
 //      var endIndex = namePosition + 1;
