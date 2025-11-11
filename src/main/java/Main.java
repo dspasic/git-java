@@ -187,8 +187,7 @@ public class Main {
       }
 
       String subcmd = args[1];
-      if (!subcmd.equals("--name-only")) {
-        System.out.println("Unknown option: " + subcmd);
+      if (!subcmd.equals("--name-only")) { System.out.println("Unknown option: " + subcmd);
         System.exit(1);
       }
 
@@ -201,6 +200,22 @@ public class Main {
         var type = content.substring(0, content.indexOf(" "));
         var size =
             Integer.parseInt(content.substring(content.indexOf(" ") + 1, content.indexOf(0x00)));
+
+        var pos = content.indexOf(0x00) + 1;
+
+        while (pos < size) {
+          var numberPosition = content.indexOf(" ", pos);
+          var number = content.substring(pos, numberPosition);
+
+          var namePosition = content.indexOf(0x00, numberPosition + 1);
+          var name = content.substring(numberPosition + 1, namePosition);
+
+          var sha = content.substring(namePosition + 1, namePosition + 20);
+
+          System.out.printf("%s %s %s\n", number, name, sha);
+          pos = namePosition + 20 + 1;
+        }
+
         System.out.print(content);
       } catch (IOException | IllegalArgumentException e) {
         System.out.println("Error while reading file" + hash);
