@@ -10,10 +10,10 @@ import java.util.zip.InflaterInputStream;
 
 public class Main {
 
-  static final File root = new File(".git");
-  static final File objects = new File(root, "objects");
-  static final File refs = new File(root, "refs");
-  static final File head = new File(root, "HEAD");
+  static final File ROOT = new File(".git");
+  static final File OBJECTS = new File(ROOT, "objects");
+  static final File REFS = new File(ROOT, "refs");
+  static final File HEAD = new File(ROOT, "HEAD");
 
   public static void main(String[] args) {
     final String command = args[0];
@@ -61,20 +61,20 @@ public class Main {
 
     @Override
     public void execute(String[] args) {
-      if (!objects.exists()) {
-        objects.mkdirs();
+      if (!OBJECTS.exists()) {
+        OBJECTS.mkdirs();
       } else {
-        System.err.println("Reinitialized existing Git repository in " + root.getAbsolutePath());
+        System.err.println("Reinitialized existing Git repository in " + ROOT.getAbsolutePath());
         System.exit(1);
       }
 
-      if (!refs.exists()) {
-        refs.mkdirs();
+      if (!REFS.exists()) {
+        REFS.mkdirs();
       }
 
       try {
-        head.createNewFile();
-        Files.write(head.toPath(), "ref: refs/heads/main\n".getBytes());
+        HEAD.createNewFile();
+        Files.write(HEAD.toPath(), "ref: refs/heads/main\n".getBytes());
         System.out.println("Initialized git directory");
       } catch (IOException e) {
         throw new RuntimeException(e);
@@ -113,7 +113,7 @@ public class Main {
         var dirname = hash.substring(0, 2);
         var filename = hash.substring(2);
 
-        var objectDir = new File(objects, dirname);
+        var objectDir = new File(OBJECTS, dirname);
         if (!objectDir.exists()) {
           objectDir.mkdirs();
         }
@@ -159,7 +159,7 @@ public class Main {
       String dirname = hash.substring(0, 2);
       String filename = hash.substring(2);
 
-      File objectFile = new File(new File(objects, dirname), filename);
+      File objectFile = new File(new File(OBJECTS, dirname), filename);
       if (!objectFile.exists()) {
         System.out.println("Object not found: " + hash);
         System.exit(1);
@@ -192,7 +192,67 @@ public class Main {
         System.exit(1);
       }
 
+      var hash = args[2];
+
+      var gitObject = new GitObject(hash);
+
+      try {
+        var content = new String(gitObject.readObjectContent());
+        var type = content.substring(0, content.indexOf(" "));
+        var size =
+            Integer.parseInt(content.substring(content.indexOf(" ") + 1, content.indexOf(0x00)));
+        System.out.print(content);
+      } catch (IOException | IllegalArgumentException e) {
+        System.out.println("Error while reading file" + hash);
+        System.out.println("Error: " + e.getMessage());
+        System.exit(1);
+      }
+
       System.out.println("main");
+    }
+  }
+
+  static class GitObject {
+
+    private final String hash;
+    private final String directory;
+    private final String filename;
+
+    GitObject(String hash) {
+      if (hash.length() != 40 || !hash.matches("[a-fA-F0-9]+")) {
+        throw new IllegalArgumentException("Invalid hash: " + hash);
+      }
+      this.hash = hash;
+      this.directory = hash.substring(0, 2);
+      this.filename = hash.substring(2);
+    }
+
+    String hash() {
+      return hash;
+    }
+
+    File file() {
+      return new File(new File(OBJECTS, directory), filename);
+    }
+
+    boolean exists() {
+      return file().exists();
+    }
+
+    byte[] readObjectContent() throws IOException {
+      var f = file();
+      if (!f.exists()) {
+        throw new IllegalArgumentException("Object not found: " + hash);
+      }
+      if (!f.canRead()) {
+        throw new IllegalArgumentException("Cannot read object: " + hash);
+      }
+      return ZlibCompressor.decompress(Files.readAllBytes(file().toPath()));
+    }
+
+    @Override
+    public String toString() {
+      return hash;
     }
   }
 
@@ -211,7 +271,7 @@ public class Main {
 
   static class ZlibCompressor {
 
-    final static int BUFFER_SIZE = 8192;
+    static final int BUFFER_SIZE = 8192;
 
     public static byte[] compress(byte[] data) throws IOException {
       var baos = new ByteArrayOutputStream();
