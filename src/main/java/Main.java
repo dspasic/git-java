@@ -210,10 +210,11 @@ public class Main {
           var namePosition = content.indexOf(0x00, numberPosition + 1);
           var name = content.substring(numberPosition + 1, namePosition);
 
-          var sha = content.substring(namePosition + 1, namePosition + 20);
+          var endIndex = determineEndIndex(namePosition, content);
+          var sha = content.substring(namePosition + 1, endIndex);
 
-          System.out.printf("%s %s\n", number, name);
-          pos = namePosition + 20 + 1;
+          System.out.printf("%s %s %s\n", number, name, sha);
+          pos = endIndex;
         }
       } catch (IOException | IllegalArgumentException e) {
         System.out.println("Error while reading file" + hash);
@@ -221,6 +222,38 @@ public class Main {
         System.exit(1);
       }
     }
+
+    private static int determineEndIndex(int namePosition, String content) {
+      var byteLimit = 20;
+      var utf8Bytes = 0;
+      var endIndex = namePosition + 1;
+      for (var i = namePosition + 1; i < content.length(); i++) {
+        char c = content.charAt(i);
+        if (Character.isHighSurrogate(c)) {
+          continue;
+        }
+        if (Character.isLowSurrogate(c)) {
+          // Low surrogate contributes 4 bytes in UTF-8
+          utf8Bytes += 4;
+        } else if (c < 0x007F) {
+          // ASCII characters: 1 byte
+          utf8Bytes += 1;
+        } else if (c < 0x07FF) {
+          // Two-byte UTF-8 characters
+          utf8Bytes += 2;
+        } else {
+          // Three-byte UTF-8 characters
+          utf8Bytes += 3;
+        }
+        if (utf8Bytes > byteLimit) {
+          break;
+        }
+        endIndex = i + 1;
+      }
+      return endIndex;
+    }
+
+
   }
 
   static class GitObject {
