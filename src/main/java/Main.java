@@ -212,7 +212,7 @@ public class Main {
 
           var sha = content.substring(namePosition + 1, namePosition + 20);
 
-          System.out.printf("no:%s n:%s c:%s\n", number, name, sha);
+          System.out.printf("%s\n", name);
           pos = namePosition + 20 + 1;
         }
       } catch (IOException | IllegalArgumentException e) {
