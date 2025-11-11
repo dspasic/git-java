@@ -212,11 +212,9 @@ public class Main {
 
           var sha = content.substring(namePosition + 1, namePosition + 20);
 
-          System.out.printf("%s %s %s\n", number, name, sha);
+          System.out.printf("no:%s n:%s c:%s\n", number, name, sha);
           pos = namePosition + 20 + 1;
         }
-
-        System.out.print(content);
       } catch (IOException | IllegalArgumentException e) {
         System.out.println("Error while reading file" + hash);
         System.out.println("Error: " + e.getMessage());
