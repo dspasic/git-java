@@ -210,7 +210,7 @@ public class Main {
           var namePosition = content.indexOf(0x00, numberPosition + 1);
           var name = content.substring(numberPosition + 1, namePosition);
 
-          var sha = content.substring(namePosition + 1, namePosition + 20);
+          var sha = content.substring(namePosition + 1, namePosition + 21);
 
           System.out.printf("%s %s\n", number, name);
           pos = namePosition + 20 + 1;
