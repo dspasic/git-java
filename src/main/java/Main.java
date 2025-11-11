@@ -211,7 +211,7 @@ public class Main {
           var name = content.substring(numberPosition + 1, namePosition);
 
           var endIndex = determineEndIndex(namePosition, content);
-          var sha = content.substring(namePosition + 1, endIndex);
+          var sha = content.substring(namePosition + 1, Math.min(endIndex, size));
 
           System.out.printf("%s\n", name);
           pos = endIndex;
