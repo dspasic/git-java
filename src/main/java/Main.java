@@ -201,7 +201,7 @@ public class Main {
         var size =
             Integer.parseInt(content.substring(content.indexOf(" ") + 1, content.indexOf(0x00)));
 
-        var pos = content.indexOf(0x00) + 1;
+        var pos = content.indexOf(0x00);
 
         while (pos < size) {
           var numberPosition = content.indexOf(" ", pos);
