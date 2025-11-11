@@ -224,33 +224,34 @@ public class Main {
     }
 
     private static int determineEndIndex(int namePosition, String content) {
-      var byteLimit = 20;
-      var utf8Bytes = 0;
-      var endIndex = namePosition + 1;
-      for (var i = namePosition + 1; i < content.length(); i++) {
-        char c = content.charAt(i);
-        if (Character.isHighSurrogate(c)) {
-          continue;
-        }
-        if (Character.isLowSurrogate(c)) {
-          // Low surrogate contributes 4 bytes in UTF-8
-          utf8Bytes += 4;
-        } else if (c < 0x007F) {
-          // ASCII characters: 1 byte
-          utf8Bytes += 1;
-        } else if (c < 0x07FF) {
-          // Two-byte UTF-8 characters
-          utf8Bytes += 2;
-        } else {
-          // Three-byte UTF-8 characters
-          utf8Bytes += 3;
-        }
-        if (utf8Bytes > byteLimit) {
-          break;
-        }
-        endIndex = i + 1;
-      }
-      return endIndex;
+      return 20;
+//      var byteLimit = 20;
+//      var utf8Bytes = 0;
+//      var endIndex = namePosition + 1;
+//      for (var i = namePosition + 1; i < content.length(); i++) {
+//        char c = content.charAt(i);
+//        if (Character.isHighSurrogate(c)) {
+//          continue;
+//        }
+//        if (Character.isLowSurrogate(c)) {
+//          // Low surrogate contributes 4 bytes in UTF-8
+//          utf8Bytes += 4;
+//        } else if (c < 0x007F) {
+//          // ASCII characters: 1 byte
+//          utf8Bytes += 1;
+//        } else if (c < 0x07FF) {
+//          // Two-byte UTF-8 characters
+//          utf8Bytes += 2;
+//        } else {
+//          // Three-byte UTF-8 characters
+//          utf8Bytes += 3;
+//        }
+//        if (utf8Bytes > byteLimit) {
+//          break;
+//        }
+//        endIndex = i + 1;
+//      }
+//      return endIndex;
     }
   }
 
