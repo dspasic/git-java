@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
@@ -187,7 +190,8 @@ public class Main {
       }
 
       String subcmd = args[1];
-      if (!subcmd.equals("--name-only")) { System.out.println("Unknown option: " + subcmd);
+      if (!subcmd.equals("--name-only")) {
+        System.out.println("Unknown option: " + subcmd);
         System.exit(1);
       }
 
@@ -196,62 +200,13 @@ public class Main {
       var gitObject = new GitObject(hash);
 
       try {
-        var content = new String(gitObject.readObjectContent());
-        var type = content.substring(0, content.indexOf(" "));
-        var size =
-            Integer.parseInt(content.substring(content.indexOf(" ") + 1, content.indexOf(0x00)));
-
-        var pos = content.indexOf(0x00) + 1;
-
-        while (pos < size) {
-          var numberPosition = content.indexOf(" ", pos);
-          var number = content.substring(pos, numberPosition);
-
-          var namePosition = content.indexOf(0x00, numberPosition + 1);
-          var name = content.substring(numberPosition + 1, namePosition);
-
-          var endIndex = determineEndIndex(namePosition, content);
-          var sha = content.substring(namePosition + 1, Math.min(endIndex, content.length()));
-
-          System.out.printf("%s\n", name);
-          pos = endIndex;
-        }
+        var tree = new GitTree(gitObject);
+        tree.entries().forEach(entry -> System.out.println(entry.name()));
       } catch (IOException | IllegalArgumentException e) {
         System.out.println("Error while reading file" + hash);
         System.out.println("Error: " + e.getMessage());
         System.exit(1);
       }
-    }
-
-    private static int determineEndIndex(int namePosition, String content) {
-      return namePosition + 20;
-//      var byteLimit = 20;
-//      var utf8Bytes = 0;
-//      var endIndex = namePosition + 1;
-//      for (var i = namePosition + 1; i < content.length(); i++) {
-//        char c = content.charAt(i);
-//        if (Character.isHighSurrogate(c)) {
-//          continue;
-//        }
-//        if (Character.isLowSurrogate(c)) {
-//          // Low surrogate contributes 4 bytes in UTF-8
-//          utf8Bytes += 4;
-//        } else if (c < 0x007F) {
-//          // ASCII characters: 1 byte
-//          utf8Bytes += 1;
-//        } else if (c < 0x07FF) {
-//          // Two-byte UTF-8 characters
-//          utf8Bytes += 2;
-//        } else {
-//          // Three-byte UTF-8 characters
-//          utf8Bytes += 3;
-//        }
-//        if (utf8Bytes > byteLimit) {
-//          break;
-//        }
-//        endIndex = i + 1;
-//      }
-//      return endIndex;
     }
   }
 
@@ -260,6 +215,7 @@ public class Main {
     private final String hash;
     private final String directory;
     private final String filename;
+    private final File file;
 
     GitObject(String hash) {
       if (hash.length() != 40 || !hash.matches("[a-fA-F0-9]+")) {
@@ -268,6 +224,7 @@ public class Main {
       this.hash = hash;
       this.directory = hash.substring(0, 2);
       this.filename = hash.substring(2);
+      file = new File(new File(OBJECTS, directory), filename);
     }
 
     String hash() {
@@ -275,7 +232,7 @@ public class Main {
     }
 
     File file() {
-      return new File(new File(OBJECTS, directory), filename);
+      return file;
     }
 
     boolean exists() {
@@ -283,11 +240,10 @@ public class Main {
     }
 
     byte[] readObjectContent() throws IOException {
-      var f = file();
-      if (!f.exists()) {
+      if (!exists()) {
         throw new IllegalArgumentException("Object not found: " + hash);
       }
-      if (!f.canRead()) {
+      if (!file.canRead()) {
         throw new IllegalArgumentException("Cannot read object: " + hash);
       }
       return ZlibCompressor.decompress(Files.readAllBytes(file().toPath()));
@@ -298,6 +254,80 @@ public class Main {
       return hash;
     }
   }
+
+  static class GitTree {
+    private Integer size;
+    private final GitObject gitObject;
+    private final List<GitTreeEntry> entries = new ArrayList<>();
+
+    GitTree(GitObject gitObject) throws IOException {
+      this.gitObject = gitObject;
+      readTree();
+    }
+
+    private void readTree() throws IOException {
+      var content = gitObject.readObjectContent();
+
+      int pos = 0;
+      int start = pos;
+
+      // read header
+      while (pos < content.length) {
+        if (content[pos] == 0x20) {
+          String type = new String(content, start, pos - start);
+          pos++;
+          start = pos;
+        }
+
+        if (content[pos] == 0x00) {
+          size = Integer.parseInt(new String(content, start, pos - start));
+          pos++;
+          break;
+        }
+
+        pos++;
+      }
+
+      // read entries
+      while (pos < content.length) {
+        int shaCount = 20;
+        start = pos;
+
+        while (content[pos] != 0x20) {
+          pos++;
+        }
+        String mode = new String(content, start, pos - start);
+        pos++;
+
+        start = pos;
+        while (content[pos] != 0x00) {
+          pos++;
+        }
+        String name = new String(content, start, pos - start);
+        pos++;
+
+        start = pos;
+        while (pos < content.length && shaCount > 0) {
+          pos++;
+          shaCount--;
+        }
+        String sha = new String(content, start, shaCount);
+        pos++;
+
+        entries.add(new GitTreeEntry(mode, name, sha));
+      }
+    }
+
+    Integer size() {
+      return size;
+    }
+
+    List<GitTreeEntry> entries() {
+      return Collections.unmodifiableList( entries);
+    }
+  }
+
+  static record GitTreeEntry(String mode, String name, String sha) {}
 
   static class HashGenerator {
 
