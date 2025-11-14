@@ -1,42 +1,33 @@
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import git.Git;
+import git.command.CatFileCommand;
+import git.command.HashObjectCommand;
+import git.command.InitCommand;
+import git.command.LsTreeCommand;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterInputStream;
 
 public class Main {
 
-  static final File ROOT = new File(".git");
-  static final File OBJECTS = new File(ROOT, "objects");
-  static final File REFS = new File(ROOT, "refs");
-  static final File HEAD = new File(ROOT, "HEAD");
-
   public static void main(String[] args) {
+    var git = new Git(new File(".git"));
+
     final String command = args[0];
     int exitCode = 0;
 
     switch (command) {
       case "init" -> {
-        var cmd = new InitCommand();
+        var cmd = new InitCommand(git);
         cmd.execute(args);
       }
       case "hash-object" -> {
-        var cmd = new HashObjectCommand();
+        var cmd = new HashObjectCommand(git);
         cmd.execute(args);
       }
       case "cat-file" -> {
-        var cmd = new CatFileCommand();
+        var cmd = new CatFileCommand(git);
         cmd.execute(args);
       }
       case "ls-tree" -> {
-        var cmd = new LsTreeCommand();
+        var cmd = new LsTreeCommand(git);
         cmd.execute(args);
       }
       case "help" -> {
@@ -54,317 +45,5 @@ public class Main {
     }
 
     System.exit(exitCode);
-  }
-
-  interface Command {
-    void execute(String[] args);
-  }
-
-  static class InitCommand implements Command {
-
-    @Override
-    public void execute(String[] args) {
-      if (!OBJECTS.exists()) {
-        OBJECTS.mkdirs();
-      } else {
-        System.err.println("Reinitialized existing Git repository in " + ROOT.getAbsolutePath());
-        System.exit(1);
-      }
-
-      if (!REFS.exists()) {
-        REFS.mkdirs();
-      }
-
-      try {
-        HEAD.createNewFile();
-        Files.write(HEAD.toPath(), "ref: refs/heads/main\n".getBytes());
-        System.out.println("Initialized git directory");
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    }
-  }
-
-  static class HashObjectCommand implements Command {
-
-    @Override
-    public void execute(String[] args) {
-      if (args.length < 3) {
-        System.out.println("Usage: hash-object -w <file>");
-        System.exit(1);
-      }
-
-      String option = args[1];
-      if (!option.equals("-w")) {
-        System.out.println("Unknown subcommand: " + option);
-        System.exit(1);
-      }
-
-      String filePath = args[2];
-      File file = new File(filePath);
-      if (!file.exists()) {
-        System.out.println("File not found: " + filePath);
-        System.exit(1);
-      }
-
-      try {
-        var objectContent =
-            String.format("blob %d\u0000%s", file.length(), Files.readString(file.toPath()))
-                .getBytes();
-
-        var hash = HashGenerator.generateHash(objectContent);
-        var dirname = hash.substring(0, 2);
-        var filename = hash.substring(2);
-
-        var objectDir = new File(OBJECTS, dirname);
-        if (!objectDir.exists()) {
-          objectDir.mkdirs();
-        }
-        var objectFile = new File(objectDir, filename);
-
-        var compressedContent = ZlibCompressor.compress(objectContent);
-        Files.write(objectFile.toPath(), compressedContent);
-
-        System.out.print(hash);
-      } catch (IOException e) {
-        System.err.println("Error reading file: " + filePath);
-        System.err.println("Error: " + e.getMessage());
-        System.exit(1);
-      } catch (NoSuchAlgorithmException e) {
-        System.err.println("Error generating hash: SHA-1");
-        System.err.println("Error: " + e.getMessage());
-        System.exit(1);
-      }
-    }
-  }
-
-  static class CatFileCommand implements Command {
-
-    @Override
-    public void execute(String[] args) {
-      if (args.length < 3) {
-        System.out.println("Usage: cat-file -p <hash>");
-        System.exit(1);
-      }
-
-      String subcmd = args[1];
-      if (!subcmd.equals("-p")) {
-        System.out.println("Unknown option: " + subcmd);
-        System.exit(1);
-      }
-
-      String hash = args[2];
-      if (hash.length() != 40 || !hash.matches("[a-fA-F0-9]+")) {
-        System.out.println("Invalid hash: " + hash);
-        System.exit(1);
-      }
-
-      String dirname = hash.substring(0, 2);
-      String filename = hash.substring(2);
-
-      File objectFile = new File(new File(OBJECTS, dirname), filename);
-      if (!objectFile.exists()) {
-        System.out.println("Object not found: " + hash);
-        System.exit(1);
-      }
-
-      try {
-        byte[] compressedContent = Files.readAllBytes(objectFile.toPath());
-        String objectContent = new String(ZlibCompressor.decompress(compressedContent));
-        System.out.print(objectContent.substring(objectContent.indexOf(0x00) + 1));
-      } catch (IOException e) {
-        System.err.println("Error reading object: " + hash);
-        System.err.println("Error: " + e.getMessage());
-        System.exit(1);
-      }
-    }
-  }
-
-  static class LsTreeCommand implements Command {
-
-    @Override
-    public void execute(String[] args) {
-      if (args.length < 3) {
-        System.out.println("Usage: ls-tree --name-only <hash>");
-        System.exit(1);
-      }
-
-      String subcmd = args[1];
-      if (!subcmd.equals("--name-only")) {
-        System.out.println("Unknown option: " + subcmd);
-        System.exit(1);
-      }
-
-      var hash = args[2];
-
-      var gitObject = new GitObject(hash);
-
-      try {
-        var tree = new GitTree(gitObject);
-        tree.entries().forEach(entry -> System.out.println(entry.name()));
-      } catch (IOException | IllegalArgumentException e) {
-        System.out.println("Error while reading file" + hash);
-        System.out.println("Error: " + e.getMessage());
-        System.exit(1);
-      }
-    }
-  }
-
-  static class GitObject {
-
-    private final String hash;
-    private final String directory;
-    private final String filename;
-    private final File file;
-
-    GitObject(String hash) {
-      if (hash.length() != 40 || !hash.matches("[a-fA-F0-9]+")) {
-        throw new IllegalArgumentException("Invalid hash: " + hash);
-      }
-      this.hash = hash;
-      this.directory = hash.substring(0, 2);
-      this.filename = hash.substring(2);
-      file = new File(new File(OBJECTS, directory), filename);
-    }
-
-    String hash() {
-      return hash;
-    }
-
-    File file() {
-      return file;
-    }
-
-    boolean exists() {
-      return file().exists();
-    }
-
-    byte[] readObjectContent() throws IOException {
-      if (!exists()) {
-        throw new IllegalArgumentException("Object not found: " + hash);
-      }
-      if (!file.canRead()) {
-        throw new IllegalArgumentException("Cannot read object: " + hash);
-      }
-      return ZlibCompressor.decompress(Files.readAllBytes(file().toPath()));
-    }
-
-    @Override
-    public String toString() {
-      return hash;
-    }
-  }
-
-  static class GitTree {
-    private Integer size;
-    private final GitObject gitObject;
-    private final List<GitTreeEntry> entries = new ArrayList<>();
-
-    GitTree(GitObject gitObject) throws IOException {
-      this.gitObject = gitObject;
-      readTree();
-    }
-
-    private void readTree() throws IOException {
-      var content = gitObject.readObjectContent();
-
-      int pos = 0;
-      int start = pos;
-
-      // read header
-      while (pos < content.length) {
-        if (content[pos] == 0x20) {
-          String type = new String(content, start, pos - start);
-          pos++;
-          start = pos;
-        }
-
-        if (content[pos] == 0x00) {
-          size = Integer.parseInt(new String(content, start, pos - start));
-          pos++;
-          break;
-        }
-
-        pos++;
-      }
-
-      // read entries
-      while (pos < content.length) {
-        int shaCount = 20;
-        start = pos;
-
-        while (content[pos] != 0x20) {
-          pos++;
-        }
-        String mode = new String(content, start, pos - start);
-        pos++;
-
-        start = pos;
-        while (content[pos] != 0x00) {
-          pos++;
-        }
-        String name = new String(content, start, pos - start);
-        pos++;
-
-        start = pos;
-        while (pos < content.length && shaCount > 0) {
-          pos++;
-          shaCount--;
-        }
-        String sha = new String(content, start, shaCount);
-        pos++;
-
-        entries.add(new GitTreeEntry(mode, name, sha));
-      }
-    }
-
-    Integer size() {
-      return size;
-    }
-
-    List<GitTreeEntry> entries() {
-      return Collections.unmodifiableList( entries);
-    }
-  }
-
-  static record GitTreeEntry(String mode, String name, String sha) {}
-
-  static class HashGenerator {
-
-    public static String generateHash(byte[] data) throws NoSuchAlgorithmException, IOException {
-      var digest = MessageDigest.getInstance("SHA-1");
-      byte[] hashBytes = digest.digest(data);
-      StringBuilder sb = new StringBuilder();
-      for (byte b : hashBytes) {
-        sb.append(String.format("%02x", b));
-      }
-      return sb.toString();
-    }
-  }
-
-  static class ZlibCompressor {
-
-    static final int BUFFER_SIZE = 8192;
-
-    public static byte[] compress(byte[] data) throws IOException {
-      var baos = new ByteArrayOutputStream();
-      try (DeflaterOutputStream deflaterOutputStream = new DeflaterOutputStream(baos)) {
-        deflaterOutputStream.write(data);
-      }
-      return baos.toByteArray();
-    }
-
-    public static byte[] decompress(byte[] data) throws IOException {
-      var baos = new ByteArrayOutputStream();
-      try (InflaterInputStream inflaterInputStream =
-          new InflaterInputStream(new ByteArrayInputStream(data))) {
-        byte[] buffer = new byte[BUFFER_SIZE];
-        int len;
-        while ((len = inflaterInputStream.read(buffer)) != -1) {
-          baos.write(buffer, 0, len);
-        }
-      }
-      return baos.toByteArray();
-    }
   }
 }

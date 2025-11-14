@@ -1,0 +1,55 @@
+package git.command;
+
+import git.Git;
+import git.ZlibCompressor;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+
+public class CatFileCommand implements Command {
+
+  private final Git git;
+
+  public CatFileCommand(Git git) {
+    this.git = git;
+  }
+
+  @Override
+  public void execute(String[] args) {
+    if (args.length < 3) {
+      System.out.println("Usage: cat-file -p <hash>");
+      System.exit(1);
+    }
+
+    String subcmd = args[1];
+    if (!subcmd.equals("-p")) {
+      System.out.println("Unknown option: " + subcmd);
+      System.exit(1);
+    }
+
+    String hash = args[2];
+    if (hash.length() != 40 || !hash.matches("[a-fA-F0-9]+")) {
+      System.out.println("Invalid hash: " + hash);
+      System.exit(1);
+    }
+
+    String dirname = hash.substring(0, 2);
+    String filename = hash.substring(2);
+
+    File objectFile = new File(new File(git.objects(), dirname), filename);
+    if (!objectFile.exists()) {
+      System.out.println("Object not found: " + hash);
+      System.exit(1);
+    }
+
+    try {
+      byte[] compressedContent = Files.readAllBytes(objectFile.toPath());
+      String objectContent = new String(ZlibCompressor.decompress(compressedContent));
+      System.out.print(objectContent.substring(objectContent.indexOf(0x00) + 1));
+    } catch (IOException e) {
+      System.err.println("Error reading object: " + hash);
+      System.err.println("Error: " + e.getMessage());
+      System.exit(1);
+    }
+  }
+}

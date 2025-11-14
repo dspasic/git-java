@@ -1,0 +1,68 @@
+package git.command;
+
+import git.Git;
+import git.HashGenerator;
+import git.ZlibCompressor;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.security.NoSuchAlgorithmException;
+
+public class HashObjectCommand implements Command {
+
+  private final Git git;
+
+  public HashObjectCommand(Git git) {
+    this.git = git;
+  }
+
+  @Override
+  public void execute(String[] args) {
+    if (args.length < 3) {
+      System.out.println("Usage: hash-object -w <file>");
+      System.exit(1);
+    }
+
+    String option = args[1];
+    if (!option.equals("-w")) {
+      System.out.println("Unknown subcommand: " + option);
+      System.exit(1);
+    }
+
+    String filePath = args[2];
+    File file = new File(filePath);
+    if (!file.exists()) {
+      System.out.println("File not found: " + filePath);
+      System.exit(1);
+    }
+
+    try {
+      var objectContent =
+          String.format("blob %d\u0000%s", file.length(), Files.readString(file.toPath()))
+              .getBytes();
+
+      var hash = HashGenerator.generateHash(objectContent);
+      var dirname = hash.substring(0, 2);
+      var filename = hash.substring(2);
+
+      var objectDir = new File(git.objects(), dirname);
+      if (!objectDir.exists()) {
+        objectDir.mkdirs();
+      }
+      var objectFile = new File(objectDir, filename);
+
+      var compressedContent = ZlibCompressor.compress(objectContent);
+      Files.write(objectFile.toPath(), compressedContent);
+
+      System.out.print(hash);
+    } catch (IOException e) {
+      System.err.println("Error reading file: " + filePath);
+      System.err.println("Error: " + e.getMessage());
+      System.exit(1);
+    } catch (NoSuchAlgorithmException e) {
+      System.err.println("Error generating hash: SHA-1");
+      System.err.println("Error: " + e.getMessage());
+      System.exit(1);
+    }
+  }
+}
