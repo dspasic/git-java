@@ -17,7 +17,7 @@ public class InitCommand implements Command {
     if (!git.objects().exists()) {
       git.objects().mkdirs();
     } else {
-      System.err.println("Reinitialized existing Git repository in " + Git.DEFAULT_ROOT.getAbsolutePath());
+      System.err.println("Reinitialized existing Git repository in " + git.root().getAbsolutePath());
       System.exit(1);
     }
 
