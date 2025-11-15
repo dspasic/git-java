@@ -2,9 +2,9 @@ package git.command;
 
 import git.Git;
 import git.ZlibCompressor;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class CatFileCommand implements Command {
 
@@ -36,14 +36,14 @@ public class CatFileCommand implements Command {
     String dirname = hash.substring(0, 2);
     String filename = hash.substring(2);
 
-    File objectFile = new File(new File(git.objects(), dirname), filename);
-    if (!objectFile.exists()) {
+    Path objectPath = git.objects().resolve(dirname, filename);
+    if (!Files.exists(objectPath)) {
       System.out.println("Object not found: " + hash);
       System.exit(1);
     }
 
     try {
-      byte[] compressedContent = Files.readAllBytes(objectFile.toPath());
+      byte[] compressedContent = Files.readAllBytes(objectPath);
       String objectContent = new String(ZlibCompressor.decompress(compressedContent));
       System.out.print(objectContent.substring(objectContent.indexOf(0x00) + 1));
     } catch (IOException e) {

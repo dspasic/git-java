@@ -3,12 +3,12 @@ import git.command.CatFileCommand;
 import git.command.HashObjectCommand;
 import git.command.InitCommand;
 import git.command.LsTreeCommand;
-import java.io.File;
+import java.nio.file.Path;
 
 public class Main {
 
   public static void main(String[] args) {
-    var git = new Git(new File(".git"));
+    var git = new Git(Path.of(".git"));
 
     final String command = args[0];
     int exitCode = 0;

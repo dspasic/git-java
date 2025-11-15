@@ -6,6 +6,7 @@ import git.ZlibCompressor;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 
 public class HashObjectCommand implements Command {
@@ -30,31 +31,32 @@ public class HashObjectCommand implements Command {
     }
 
     String filePath = args[2];
-    File file = new File(filePath);
-    if (!file.exists()) {
+    Path file = Path.of(filePath);
+    if (!Files.exists(file)) {
       System.out.println("File not found: " + filePath);
       System.exit(1);
     }
 
     try {
       var objectContent =
-          String.format("blob %d\u0000%s", file.length(), Files.readString(file.toPath()))
+          String.format("blob %d\u0000%s", Files.size(file), Files.readString(file))
               .getBytes();
 
       var hash = HashGenerator.generateHash(objectContent);
       var dirname = hash.substring(0, 2);
       var filename = hash.substring(2);
 
-      var objectDir = new File(git.objects(), dirname);
-      if (!objectDir.exists()) {
-        objectDir.mkdirs();
+      var objectDir = git.objects().resolve(dirname);
+      if (!Files.exists(objectDir)) {
+        Files.createDirectory(objectDir);
       }
-      var objectFile = new File(objectDir, filename);
+      var objectPath = objectDir.resolve(filename);
 
       var compressedContent = ZlibCompressor.compress(objectContent);
-      Files.write(objectFile.toPath(), compressedContent);
+      Files.write(objectPath, compressedContent);
 
       System.out.print(hash);
+      System.exit(0);
     } catch (IOException e) {
       System.err.println("Error reading file: " + filePath);
       System.err.println("Error: " + e.getMessage());

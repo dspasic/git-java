@@ -1,20 +1,20 @@
 package git;
 
-import java.io.File;
+import java.nio.file.Path;
 
-public record Git(File root, File objects, File refs, File head) {
+public record Git(Path root, Path objects, Path refs, Path head) {
 
-  private static final File DEFAULT_ROOT = new File(".git");
-  private static final File DEFAULT_OBJECTS = new File(DEFAULT_ROOT, "objects");
-  private static final File DEFAULT_REFS = new File(DEFAULT_ROOT, "refs");
-  private static final File DEFAULT_HEAD = new File(DEFAULT_ROOT, "HEAD");
+  private static final Path DEFAULT_ROOT = Path.of(".git");
+  private static final Path DEFAULT_OBJECTS = DEFAULT_ROOT.resolve("objects");
+  private static final Path DEFAULT_REFS = DEFAULT_ROOT.resolve( "refs");
+  private static final Path DEFAULT_HEAD = DEFAULT_ROOT.resolve( "HEAD");
 
   public Git() {
     this(DEFAULT_ROOT, DEFAULT_OBJECTS, DEFAULT_REFS, DEFAULT_HEAD);
   }
 
-  public Git(File root) {
-    this(root, new File(root, "objects"), new File(root, "refs"), new File(root, "HEAD"));
+  public Git(Path root) {
+    this(root, root.resolve("objects"), root.resolve( "refs"), root.resolve("HEAD"));
   }
 
 }
