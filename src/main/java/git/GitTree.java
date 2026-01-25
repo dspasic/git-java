@@ -16,8 +16,11 @@ public class GitTree {
     readTree();
   }
 
+  /// [Git Tree Objects](https://git-scm.com/book/en/v2/Git-Internals-Git-Objects#_tree_objects)
+  /// [What is the internal format of a Git tree
+  /// object?](https://stackoverflow.com/questions/14790681/what-is-the-internal-format-of-a-git-tree-object)
   private void readTree() throws IOException {
-    var content = gitObject.readObjectContent();
+    byte[] content = gitObject.readObjectContent();
 
     int pos = 0;
     int start = pos;
@@ -26,6 +29,10 @@ public class GitTree {
     while (pos < content.length) {
       if (content[pos] == 0x20) {
         String type = new String(content, start, pos - start);
+        if (!type.equals("tree")) {
+          throw new RuntimeException(
+              String.format("Given object must be from type tree. Found type: %s", type));
+        }
         pos++;
         start = pos;
       }

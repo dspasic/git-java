@@ -14,16 +14,16 @@ public class LsTreeCommand implements Command {
   }
 
   @Override
-  public void execute(String[] args) {
+  public int execute(String[] args) {
     if (args.length < 3) {
       System.out.println("Usage: ls-tree --name-only <hash>");
-      System.exit(1);
+      return 1;
     }
 
     String subcmd = args[1];
     if (!subcmd.equals("--name-only")) {
       System.out.println("Unknown option: " + subcmd);
-      System.exit(1);
+      return 1;
     }
 
     var hash = args[2];
@@ -33,10 +33,11 @@ public class LsTreeCommand implements Command {
     try {
       var tree = new GitTree(gitObject);
       tree.entries().forEach(entry -> System.out.println(entry.name()));
+      return 0;
     } catch (IOException | IllegalArgumentException e) {
       System.out.println("Error while reading file" + hash);
       System.out.println("Error: " + e.getMessage());
-      System.exit(1);
+      return 1;
     }
   }
 }

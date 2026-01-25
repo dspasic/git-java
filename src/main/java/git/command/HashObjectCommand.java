@@ -18,23 +18,23 @@ public class HashObjectCommand implements Command {
   }
 
   @Override
-  public void execute(String[] args) {
+  public int execute(String[] args) {
     if (args.length < 3) {
       System.out.println("Usage: hash-object -w <file>");
-      System.exit(1);
+      return 1;
     }
 
     String option = args[1];
     if (!option.equals("-w")) {
       System.out.println("Unknown subcommand: " + option);
-      System.exit(1);
+      return 1;
     }
 
     String filePath = args[2];
     Path file = Path.of(filePath);
     if (!Files.exists(file)) {
       System.out.println("File not found: " + filePath);
-      System.exit(1);
+      return 1;
     }
 
     try {
@@ -56,15 +56,15 @@ public class HashObjectCommand implements Command {
       Files.write(objectPath, compressedContent);
 
       System.out.print(hash);
-      System.exit(0);
+      return 0;
     } catch (IOException e) {
       System.err.println("Error reading file: " + filePath);
       System.err.println("Error: " + e.getMessage());
-      System.exit(1);
+      return 1;
     } catch (NoSuchAlgorithmException e) {
       System.err.println("Error generating hash: SHA-1");
       System.err.println("Error: " + e.getMessage());
-      System.exit(1);
+      return 1;
     }
   }
 }
