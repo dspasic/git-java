@@ -3,11 +3,14 @@ import git.command.CatFileCommand;
 import git.command.HashObjectCommand;
 import git.command.InitCommand;
 import git.command.LsTreeCommand;
+import git.command.WriteTreeCommand;
+
+import java.io.IOException;
 import java.nio.file.Path;
 
 public class Main {
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
     var git = new Git(Path.of(".git"));
 
     final String command = args[0];
@@ -28,6 +31,10 @@ public class Main {
       }
       case "ls-tree" -> {
         var cmd = new LsTreeCommand(git);
+        cmd.execute(args);
+      }
+      case "write-tree" -> {
+        var cmd = new WriteTreeCommand(git);
         cmd.execute(args);
       }
       case "help" -> {
