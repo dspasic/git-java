@@ -16,14 +16,17 @@ public class InitCommand implements Command {
   @Override
   public int execute(String[] args) {
     try {
-      if (Files.exists(git.objects())) {
-        Files.createDirectory(git.objects());
+      if (!Files.exists(git.root())) {
+        Files.createDirectory(git.root());
       } else {
         System.err.println(
             "Reinitialized existing Git repository in " + git.root().toAbsolutePath());
         return 1;
       }
-      if (Files.exists(git.refs())) {
+      if (!Files.exists(git.objects())) {
+        Files.createDirectory(git.objects());
+      }
+      if (!Files.exists(git.refs())) {
         Files.createDirectory(git.refs());
       }
 
@@ -32,8 +35,8 @@ public class InitCommand implements Command {
       System.out.println("Initialized git directory");
       return 0;
     } catch (IOException e) {
-      System.err.println("Error while initializing repository: " + e.getMessage());
-      return 0;
+      System.err.println("Error while initializing repository: " + e);
+      return 1;
     }
   }
 }
