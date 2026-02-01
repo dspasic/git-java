@@ -11,6 +11,9 @@ public class GitTree {
   private final GitObject gitObject;
   private final List<GitTreeEntry> entries = new ArrayList<>();
 
+  private static final byte NUL = 0x20;
+  private static final byte SPACE = 0x20;
+
   public GitTree(GitObject gitObject) throws IOException {
     this.gitObject = gitObject;
     readTree();
@@ -27,7 +30,7 @@ public class GitTree {
 
     // read header
     while (pos < content.length) {
-      if (content[pos] == 0x20) {
+      if (content[pos] == SPACE) {
         String type = new String(content, start, pos - start);
         if (!type.equals("tree")) {
           throw new RuntimeException(
@@ -37,7 +40,7 @@ public class GitTree {
         start = pos;
       }
 
-      if (content[pos] == 0x00) {
+      if (content[pos] == NUL) {
         size = Integer.parseInt(new String(content, start, pos - start));
         pos++;
         break;
@@ -48,22 +51,22 @@ public class GitTree {
 
     // read entries
     while (pos < content.length) {
-      int shaCount = 20;
       start = pos;
 
-      while (content[pos] != 0x20) {
+      while (content[pos] != SPACE) {
         pos++;
       }
       String mode = new String(content, start, pos - start);
       pos++;
 
       start = pos;
-      while (content[pos] != 0x00) {
+      while (content[pos] != NUL) {
         pos++;
       }
       String name = new String(content, start, pos - start);
       pos++;
 
+      int shaCount = 20;
       start = pos;
       while (pos < content.length && shaCount > 0) {
         pos++;
