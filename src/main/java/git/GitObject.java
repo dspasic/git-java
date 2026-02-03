@@ -36,7 +36,7 @@ public class GitObject {
       throw new IllegalArgumentException("Not a regular file: " + hash);
     }
 
-    try{
+    try {
       content = ZlibCompressor.decompress(Files.readAllBytes(path));
     } catch (IOException e) {
       throw new RuntimeException("Error decompressing object: " + path, e);
@@ -68,15 +68,20 @@ public class GitObject {
     }
 
     if ((pos + size) != content.length) {
-      throw new RuntimeException("size of object does not match content length");
+      throw new RuntimeException(
+          String.format(
+              "size \"%d\" of object does not match content length \"%d\"",
+              (pos + size), content.length));
     }
   }
 
   int contentStart() {
+    parseObject();
     return start;
   }
 
   int contentPos() {
+    parseObject();
     return pos;
   }
 
@@ -115,6 +120,7 @@ public class GitObject {
   public boolean exists() {
     return Files.exists(path);
   }
+
   @Override
   public String toString() {
     return hash.toString();
