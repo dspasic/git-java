@@ -26,7 +26,7 @@ public class GitJava {
         }
         
         // Parse global flags
-        int commandIndex = 0;
+        int commandIndex = -1;
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("--quiet") || args[i].equals("-q")) {
                 quiet = true;
@@ -36,7 +36,7 @@ public class GitJava {
             }
         }
         
-        if (commandIndex >= args.length) {
+        if (commandIndex == -1 || commandIndex >= args.length) {
             printUsage();
             return;
         }
