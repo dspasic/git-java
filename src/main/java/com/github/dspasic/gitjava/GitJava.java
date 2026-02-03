@@ -36,7 +36,7 @@ public class GitJava {
             }
         }
         
-        if (commandIndex == -1 || commandIndex >= args.length) {
+        if (commandIndex == -1) {
             printUsage();
             return;
         }
@@ -123,13 +123,13 @@ public class GitJava {
         }
         
         if (!quiet) {
-            System.out.println("[main " + generateCommitHash() + "] " + message);
+            System.out.println("[main " + generateMockCommitHash() + "] " + message);
             System.out.println(" 1 file changed, 1 insertion(+)");
         }
     }
     
-    private String generateCommitHash() {
-        // Generate a simple mock commit hash
+    private String generateMockCommitHash() {
+        // Generate a simple mock commit hash for demonstration purposes
         return String.format("%07x", System.currentTimeMillis() % 0x10000000);
     }
 }
