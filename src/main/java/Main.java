@@ -44,6 +44,7 @@ public class Main {
         System.out.println("  hash-object -w <file>");
         System.out.println("  cat-file -p <hash>");
         System.out.println("  ls-tree --name-only <hash>");
+        System.out.println("  write-tree");
       }
       default -> {
         System.err.println("Unknown command: " + command);

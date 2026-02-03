@@ -19,7 +19,7 @@ public class WriteTreeCommand implements Command {
 
   @Override
   public int execute(String[] args) {
-    try (Stream<Path> paths = Files.walk(Paths.get(".").toRealPath().toAbsolutePath())) {
+    try (Stream<Path> paths = Files.walk(Paths.get(".").toRealPath())) {
       paths
           .filter(
               p -> !p.startsWith(git.root()))

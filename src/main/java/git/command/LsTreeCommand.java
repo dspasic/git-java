@@ -3,6 +3,7 @@ package git.command;
 import git.Git;
 import git.GitObject;
 import git.GitTree;
+import git.Hash;
 import java.io.IOException;
 
 public class LsTreeCommand implements Command {
@@ -28,7 +29,7 @@ public class LsTreeCommand implements Command {
 
     var hash = args[2];
 
-    var gitObject = new GitObject(git, hash);
+    var gitObject = new GitObject(git, new Hash(hash));
 
     try {
       var tree = new GitTree(gitObject);

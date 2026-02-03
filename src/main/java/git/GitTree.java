@@ -23,7 +23,7 @@ public class GitTree {
   /// [What is the internal format of a Git tree
   /// object?](https://stackoverflow.com/questions/14790681/what-is-the-internal-format-of-a-git-tree-object)
   private void readTree() throws IOException {
-    byte[] content = gitObject.readObjectContent();
+    byte[] content = gitObject.objectContent();
 
     int pos = 0;
     int start = pos;

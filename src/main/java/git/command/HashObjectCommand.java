@@ -1,9 +1,9 @@
 package git.command;
 
 import git.Git;
+import git.Hash;
 import git.HashGenerator;
 import git.ZlibCompressor;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,9 +42,9 @@ public class HashObjectCommand implements Command {
           String.format("blob %d\u0000%s", Files.size(file), Files.readString(file))
               .getBytes();
 
-      var hash = HashGenerator.generateHash(objectContent);
-      var dirname = hash.substring(0, 2);
-      var filename = hash.substring(2);
+      Hash hash = HashGenerator.generateHash(objectContent);
+      String dirname = hash.dirname();
+      String filename = hash.filename();
 
       var objectDir = git.objects().resolve(dirname);
       if (!Files.exists(objectDir)) {

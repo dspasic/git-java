@@ -16,9 +16,9 @@ public record Git(Path root, Path objects, Path refs, Path head) {
 
   public Git(Path root) throws IOException {
     this(
-        root.toRealPath().toAbsolutePath(),
-        root.toRealPath().toAbsolutePath().resolve("objects"),
-        root.toRealPath().toAbsolutePath().resolve("refs"),
-        root.toRealPath().toAbsolutePath().resolve("HEAD"));
+        root.toRealPath(),
+        root.toRealPath().resolve("objects"),
+        root.toRealPath().resolve("refs"),
+        root.toRealPath().resolve("HEAD"));
   }
 }

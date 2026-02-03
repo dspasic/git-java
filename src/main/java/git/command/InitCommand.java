@@ -3,7 +3,6 @@ package git.command;
 import git.Git;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.attribute.FileAttribute;
 
 public class InitCommand implements Command {
 
