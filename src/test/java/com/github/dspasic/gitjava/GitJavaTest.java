@@ -142,6 +142,15 @@ class GitJavaTest {
     }
     
     @Test
+    void testMultipleQuietFlags() {
+        GitJava app = new GitJava();
+        app.run(new String[]{"--quiet", "-q", "status"});
+        
+        assertTrue(app.isQuiet(), "Quiet mode should work with multiple quiet flags");
+        assertEquals("", outContent.toString(), "No output in quiet mode with multiple flags");
+    }
+    
+    @Test
     void testErrorMessagesStillShownInQuietMode() {
         GitJava app = new GitJava();
         app.run(new String[]{"--quiet", "add"});

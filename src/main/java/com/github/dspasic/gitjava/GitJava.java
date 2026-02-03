@@ -30,7 +30,6 @@ public class GitJava {
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("--quiet") || args[i].equals("-q")) {
                 quiet = true;
-                commandIndex = i + 1;
             } else {
                 commandIndex = i;
                 break;
