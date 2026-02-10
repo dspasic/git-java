@@ -11,8 +11,6 @@ import java.nio.file.Path;
 public class Main {
 
   public static void main(String[] args) throws IOException {
-    var git = new Git(Path.of(".git"));
-
     final String command = args[0];
     int exitCode = 0;
 
@@ -22,18 +20,22 @@ public class Main {
         exitCode = cmd.execute(args);
       }
       case "hash-object" -> {
+        var git = new Git(Path.of(".git"));
         var cmd = new HashObjectCommand(git);
         exitCode = cmd.execute(args);
       }
       case "cat-file" -> {
+        var git = new Git(Path.of(".git"));
         var cmd = new CatFileCommand(git);
         exitCode = cmd.execute(args);
       }
       case "ls-tree" -> {
+        var git = new Git(Path.of(".git"));
         var cmd = new LsTreeCommand(git);
         exitCode = cmd.execute(args);
       }
       case "write-tree" -> {
+        var git = new Git(Path.of(".git"));
         var cmd = new WriteTreeCommand(git);
         exitCode = cmd.execute(args);
       }
