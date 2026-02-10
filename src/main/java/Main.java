@@ -18,7 +18,7 @@ public class Main {
 
     switch (command) {
       case "init" -> {
-        var cmd = new InitCommand(git);
+        var cmd = new InitCommand(new Git());
         exitCode = cmd.execute(args);
       }
       case "hash-object" -> {
