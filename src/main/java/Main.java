@@ -14,28 +14,26 @@ public class Main {
     final String command = args[0];
     int exitCode = 0;
 
+    var git = new Git(Path.of(".git"));
+
     switch (command) {
       case "init" -> {
-        var cmd = new InitCommand(new Git());
+        var cmd = new InitCommand(git);
         exitCode = cmd.execute(args);
       }
       case "hash-object" -> {
-        var git = new Git(Path.of(".git"));
         var cmd = new HashObjectCommand(git);
         exitCode = cmd.execute(args);
       }
       case "cat-file" -> {
-        var git = new Git(Path.of(".git"));
         var cmd = new CatFileCommand(git);
         exitCode = cmd.execute(args);
       }
       case "ls-tree" -> {
-        var git = new Git(Path.of(".git"));
         var cmd = new LsTreeCommand(git);
         exitCode = cmd.execute(args);
       }
       case "write-tree" -> {
-        var git = new Git(Path.of(".git"));
         var cmd = new WriteTreeCommand(git);
         exitCode = cmd.execute(args);
       }
