@@ -85,7 +85,7 @@ public class GitObject {
     return pos;
   }
 
-  public byte[] objectContent() throws IOException {
+  public byte[] objectContent() {
     parseObject();
     return content;
   }

@@ -19,23 +19,23 @@ public class Main {
     switch (command) {
       case "init" -> {
         var cmd = new InitCommand(git);
-        cmd.execute(args);
+        exitCode = cmd.execute(args);
       }
       case "hash-object" -> {
         var cmd = new HashObjectCommand(git);
-        cmd.execute(args);
+        exitCode = cmd.execute(args);
       }
       case "cat-file" -> {
         var cmd = new CatFileCommand(git);
-        cmd.execute(args);
+        exitCode = cmd.execute(args);
       }
       case "ls-tree" -> {
         var cmd = new LsTreeCommand(git);
-        cmd.execute(args);
+        exitCode = cmd.execute(args);
       }
       case "write-tree" -> {
         var cmd = new WriteTreeCommand(git);
-        cmd.execute(args);
+        exitCode = cmd.execute(args);
       }
       case "help" -> {
         System.out.println("Usage: git <command> [<args>]");
