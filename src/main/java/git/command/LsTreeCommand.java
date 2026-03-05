@@ -3,6 +3,7 @@ package git.command;
 import git.Git;
 import git.GitObject;
 import git.GitTree;
+import git.GitTreeReader;
 import git.Hash;
 import java.io.IOException;
 
@@ -32,7 +33,7 @@ public class LsTreeCommand implements Command {
     var gitObject = new GitObject(git, new Hash(hash));
 
     try {
-      var tree = new GitTree(gitObject);
+      var tree = GitTreeReader.read(gitObject);
       tree.entries().forEach(entry -> System.out.println(entry.name()));
       return 0;
     } catch (IOException | IllegalArgumentException e) {

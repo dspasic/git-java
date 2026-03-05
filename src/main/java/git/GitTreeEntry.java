@@ -1,3 +1,10 @@
 package git;
 
-public record GitTreeEntry(String mode, String name, String sha) {}
+import git.command.TreeNode;
+
+public record GitTreeEntry(String mode, String name, String sha) implements TreeNode {
+
+  public String type() {
+    return mode;
+  }
+}
