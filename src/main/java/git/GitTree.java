@@ -11,7 +11,7 @@ public class GitTree {
   private final GitObject gitObject;
   private final List<GitTreeEntry> entries = new ArrayList<>();
 
-  private static final byte NUL = 0x20;
+  private static final byte NUL = 0x00;
   private static final byte SPACE = 0x20;
 
   public GitTree(GitObject gitObject) throws IOException {
@@ -22,7 +22,7 @@ public class GitTree {
   /// [Git Tree Objects](https://git-scm.com/book/en/v2/Git-Internals-Git-Objects#_tree_objects)
   /// [What is the internal format of a Git tree
   /// object?](https://stackoverflow.com/questions/14790681/what-is-the-internal-format-of-a-git-tree-object)
-  private void readTree() throws IOException {
+  private void readTree() {
     byte[] content = gitObject.objectContent();
 
     int pos = 0;

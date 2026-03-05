@@ -1,8 +1,10 @@
 package git;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 public class GitObject {
@@ -12,7 +14,7 @@ public class GitObject {
   private final Path path;
   private String type;
   private byte[] content;
-  private Integer size;
+  private Long size;
   private int pos;
   private int start;
 
@@ -20,6 +22,40 @@ public class GitObject {
     this.hash = hash;
     this.git = git;
     path = git.objects().resolve(hash.dirname(), hash.filename());
+  }
+
+  public static GitObject create(Git git, Path path) throws IOException, NoSuchAlgorithmException {
+    if (!Files.exists(path)) {
+      throw new FileNotFoundException("File not found: " + path);
+    }
+
+    var fileSize = Files.size(path);
+    var objectContent =
+        String.format("blob %d\u0000%s", fileSize, Files.readString(path)).getBytes();
+    Hash hash = HashGenerator.generateHash(objectContent);
+    String dirname = hash.dirname();
+    String filename = hash.filename();
+
+    var objectDirPath = git.objects().resolve(dirname);
+    if (!Files.exists(objectDirPath)) {
+      Files.createDirectory(objectDirPath);
+    }
+    var objectPath = objectDirPath.resolve(filename);
+    var compressedContent = ZlibCompressor.compress(objectContent);
+    Files.write(objectPath, compressedContent);
+
+    var gitObject = new GitObject(git, hash);
+    gitObject.content = objectContent;
+    gitObject.type = "blob";
+    gitObject.size = fileSize;
+    gitObject.pos = gitObject.type.length() + gitObject.size.toString().length() +3;
+    gitObject.start = gitObject.pos;
+
+    return gitObject;
+  }
+
+  public static GitObject create(Git git, String path) throws IOException, NoSuchAlgorithmException {
+    return create(git, Path.of(path));
   }
 
   private void parseObject() {
@@ -52,8 +88,9 @@ public class GitObject {
       }
 
       if (content[pos] == 0x00) {
-        size = Integer.parseInt(new String(content, start, pos - start));
+        size = Long.parseLong(new String(content, start, pos - start));
         pos++;
+        start = pos;
         break;
       }
       pos++;
@@ -92,11 +129,12 @@ public class GitObject {
 
   public String contentString() {
     parseObject();
-    return new String(content, start, (pos + size) - start);
+    return new String(content, start, (pos + size.intValue()) - start);
   }
 
   public byte[] content() {
-    return Arrays.copyOfRange(content, start, (pos + size) + 1);
+    parseObject();
+    return Arrays.copyOfRange(content, start, (pos + size.intValue()) + 1);
   }
 
   public String type() {

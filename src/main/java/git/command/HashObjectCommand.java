@@ -1,6 +1,7 @@
 package git.command;
 
 import git.Git;
+import git.GitObject;
 import git.Hash;
 import git.HashGenerator;
 import git.ZlibCompressor;
@@ -38,24 +39,9 @@ public class HashObjectCommand implements Command {
     }
 
     try {
-      var objectContent =
-          String.format("blob %d\u0000%s", Files.size(file), Files.readString(file))
-              .getBytes();
+      var gitObject = GitObject.create(git, filePath);
 
-      Hash hash = HashGenerator.generateHash(objectContent);
-      String dirname = hash.dirname();
-      String filename = hash.filename();
-
-      var objectDir = git.objects().resolve(dirname);
-      if (!Files.exists(objectDir)) {
-        Files.createDirectory(objectDir);
-      }
-      var objectPath = objectDir.resolve(filename);
-
-      var compressedContent = ZlibCompressor.compress(objectContent);
-      Files.write(objectPath, compressedContent);
-
-      System.out.print(hash);
+      System.out.print(gitObject.hash().toString());
       return 0;
     } catch (IOException e) {
       System.err.println("Error reading file: " + filePath);

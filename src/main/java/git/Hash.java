@@ -20,4 +20,9 @@ public record Hash(String hash) {
   public String filename() {
     return hash.substring(2);
   }
+
+  @Override
+  public String toString() {
+    return hash;
+  }
 }
