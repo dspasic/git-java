@@ -1,7 +1,5 @@
 package git;
 
-import git.command.TreeNode;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,12 +22,23 @@ public class GitTree implements TreeNode {
     return gitObject.size();
   }
 
-  public List<GitTreeEntry> entries() {
+  @Override
+  public List<TreeNode> entries() {
     return Collections.unmodifiableList(entries);
   }
 
   @Override
   public String type() {
     return gitObject.type();
+  }
+
+  @Override
+  public String hash() {
+    return gitObject.hash().toString();
+  }
+
+  @Override
+  public String name() {
+    return hash();
   }
 }

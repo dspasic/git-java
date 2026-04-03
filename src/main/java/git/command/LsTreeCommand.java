@@ -2,9 +2,9 @@ package git.command;
 
 import git.Git;
 import git.GitObject;
-import git.GitTree;
 import git.GitTreeReader;
 import git.Hash;
+import git.HashGenerator;
 import java.io.IOException;
 
 public class LsTreeCommand implements Command {
@@ -19,13 +19,13 @@ public class LsTreeCommand implements Command {
   public int execute(String[] args) {
     if (args.length < 3) {
       System.out.println("Usage: ls-tree --name-only <hash>");
-      return 1;
+      return Command.EXIT_ERROR;
     }
 
     String subcmd = args[1];
     if (!subcmd.equals("--name-only")) {
       System.out.println("Unknown option: " + subcmd);
-      return 1;
+      return Command.EXIT_ERROR;
     }
 
     var hash = args[2];
@@ -34,12 +34,13 @@ public class LsTreeCommand implements Command {
 
     try {
       var tree = GitTreeReader.read(gitObject);
-      tree.entries().forEach(entry -> System.out.println(entry.name()));
-      return 0;
+      tree.entries()
+          .forEach(entry -> System.out.println(entry.name() + " -> |" + entry.hash() + "|"));
+      return Command.EXIT_SUCCESS;
     } catch (IOException | IllegalArgumentException e) {
       System.out.println("Error while reading file" + hash);
       System.out.println("Error: " + e.getMessage());
-      return 1;
+      return Command.EXIT_ERROR;
     }
   }
 }

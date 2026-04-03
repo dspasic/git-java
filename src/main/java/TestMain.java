@@ -39,7 +39,7 @@ public class TestMain {
 
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) {
-      System.out.println("Visit failed:" + file);
+      System.out.println("Visit failed:" + file + ". Here is why: " + exc.getMessage());
       return FileVisitResult.CONTINUE;
     }
 

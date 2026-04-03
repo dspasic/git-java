@@ -6,7 +6,8 @@ import java.util.List;
 
 /// [Git Tree Objects](https://git-scm.com/book/en/v2/Git-Internals-Git-Objects#_tree_objects)
 /// [What is the internal format of a Git tree
-/// object?](https://stackoverflow.com/questions/14790681/what-is-the-internal-format-of-a-git-tree-object)
+///
+// object?](https://stackoverflow.com/questions/14790681/what-is-the-internal-format-of-a-git-tree-object)
 public class GitTreeReader {
 
   private static final byte NUL = 0x00;
@@ -59,15 +60,16 @@ public class GitTreeReader {
       pos++;
 
       int shaCount = 20;
+      byte[] hashBytes = new byte[shaCount];
       start = pos;
       while (pos < content.length && shaCount > 0) {
+        hashBytes[pos - start] = content[pos];
         pos++;
         shaCount--;
       }
-      String sha = new String(content, start, shaCount);
       pos++;
 
-      entries.add(new GitTreeEntry(mode, name, sha));
+      entries.add(new GitTreeEntry(mode, name, hashBytes));
     }
 
     return new GitTree(gitObject, entries);
