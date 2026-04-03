@@ -4,7 +4,6 @@ import git.Git;
 import git.GitObject;
 import git.GitTreeReader;
 import git.Hash;
-import git.HashGenerator;
 import java.io.IOException;
 
 public class LsTreeCommand implements Command {

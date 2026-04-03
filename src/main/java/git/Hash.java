@@ -1,8 +1,23 @@
 package git;
 
-public record Hash(String hash) {
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
-  public Hash {
+public class Hash {
+
+  private final String hash;
+  private final byte[] hashBytes;
+
+  public Hash(byte[] hashBytes) {
+    if (hashBytes.length != 20) {
+      throw new IllegalArgumentException(
+          String.format("Invalid has length. Expected 20 got: %d", hashBytes.length));
+    }
+    this.hashBytes = hashBytes;
+    this.hash = toHex(hashBytes);
+  }
+
+  public Hash(String hash) {
     if (hash.length() != 40) {
       throw new IllegalArgumentException(
           String.format("Invalid has length. Expected 40 got: %d", hash.length()));
@@ -11,6 +26,42 @@ public record Hash(String hash) {
       throw new IllegalArgumentException(
           String.format("Invalid hash format: %s. Expected format: %s", hash, "[a-fA-F0-9]+"));
     }
+    this.hash = hash;
+    this.hashBytes = toBytes(hash);
+
+    assert this.hash.equals(toHex(hashBytes));
+  }
+
+  private String toHex(byte[] hashBytes) {
+    StringBuilder sb = new StringBuilder();
+    for (byte b : hashBytes) {
+      sb.append(String.format("%02x", b));
+    }
+    return sb.toString();
+  }
+
+  private byte[] toBytes(String hash) {
+    byte[] b = new byte[20];
+    for (int i = 0; i < hash.length(); i += 2) {
+      int high = Character.digit(hash.charAt(i), 16);
+      int low = Character.digit(hash.charAt(i + 1), 16);
+      b[i/2] = (byte) ((high << 4) | low);
+    }
+    return b;
+  }
+
+  public static Hash fromContent(byte[] content) throws NoSuchAlgorithmException {
+    MessageDigest digest = MessageDigest.getInstance("SHA-1");
+    byte[] hash = digest.digest(content);
+    return new Hash(hash);
+  }
+
+  public String hash() {
+    return hash;
+  }
+
+  public byte[] bytes() {
+    return hashBytes;
   }
 
   public String dirname() {

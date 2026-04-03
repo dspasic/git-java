@@ -16,13 +16,13 @@ public class CatFileCommand implements Command {
   public int execute(String[] args) {
     if (args.length < 3) {
       System.out.println("Usage: cat-file -p <hash>");
-      return 1;
+      return Command.EXIT_ERROR;
     }
 
     String subcmd = args[1];
     if (!subcmd.equals("-p")) {
       System.out.println("Unknown option: " + subcmd);
-      return 1;
+      return Command.EXIT_ERROR;
     }
 
     String hash = args[2];
@@ -33,8 +33,8 @@ public class CatFileCommand implements Command {
     } catch (RuntimeException e) {
       System.err.println("Error reading object: " + hash);
       System.err.println("Error: " + e.getMessage());
-      return 1;
+      return Command.EXIT_ERROR;
     }
-    return 0;
+    return Command.EXIT_SUCCESS;
   }
 }

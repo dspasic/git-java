@@ -7,12 +7,12 @@ public class GitTreeEntry implements TreeNode {
 
   private final String mode;
   private final String name;
-  private final byte[] hash;
+  private final Hash hash;
 
   GitTreeEntry(String mode, String name, byte[] hash) {
     this.mode = Objects.requireNonNull(mode, "mode must not be null.");
     this.name = Objects.requireNonNull(name, "name must not be null.");
-    this.hash = Objects.requireNonNull(hash, "hash must not be null.");
+    this.hash = new Hash(Objects.requireNonNull(hash, "hash must not be null."));
   }
 
   public String type() {
@@ -31,6 +31,6 @@ public class GitTreeEntry implements TreeNode {
 
   @Override
   public String hash() {
-    return new String(hash);
+    return new String(hash.bytes());
   }
 }

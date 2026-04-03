@@ -32,7 +32,7 @@ public class GitObject {
     var fileSize = Files.size(path);
     var objectContent =
         String.format("blob %d\u0000%s", fileSize, Files.readString(path)).getBytes();
-    Hash hash = HashGenerator.generateHash(objectContent);
+    Hash hash = Hash.fromContent(objectContent);
     String dirname = hash.dirname();
     String filename = hash.filename();
 

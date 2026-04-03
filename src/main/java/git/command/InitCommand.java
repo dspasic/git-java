@@ -20,7 +20,7 @@ public class InitCommand implements Command {
       } else {
         System.err.println(
             "Reinitialized existing Git repository in " + git.root().toAbsolutePath());
-        return 1;
+        return Command.EXIT_ERROR;
       }
       if (!Files.exists(git.objects())) {
         Files.createDirectory(git.objects());
@@ -32,10 +32,10 @@ public class InitCommand implements Command {
       Files.createFile(git.head());
       Files.write(git.head(), "ref: refs/heads/main\n".getBytes());
       System.out.println("Initialized git directory");
-      return 0;
+      return Command.EXIT_SUCCESS;
     } catch (IOException e) {
       System.err.println("Error while initializing repository: " + e);
-      return 1;
+      return Command.EXIT_ERROR;
     }
   }
 }
