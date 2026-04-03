@@ -33,8 +33,7 @@ public class LsTreeCommand implements Command {
 
     try {
       var tree = GitTreeReader.read(gitObject);
-      tree.entries()
-          .forEach(entry -> System.out.println(entry.name() + " -> |" + entry.hash() + "|"));
+      tree.entries().forEach(entry -> System.out.println(entry.name()));
       return Command.EXIT_SUCCESS;
     } catch (IOException | IllegalArgumentException e) {
       System.out.println("Error while reading file" + hash);
