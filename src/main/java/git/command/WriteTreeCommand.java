@@ -1,13 +1,18 @@
 package git.command;
 
 import git.Git;
+import git.GitObject;
 import git.GitTree;
+import git.GitTreeEntry;
+import git.GitTreeNode;
+
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,28 +23,36 @@ public class WriteTreeCommand implements Command {
   private final Git git;
 
   public WriteTreeCommand(Git git) {
-    this.git = Objects.requireNonNull(git, "Git must be not null");
+    this.git = Objects.requireNonNull(git, "Git must be not null.");
   }
 
   @Override
   public int execute(String[] args) {
-    try{
-      FileVisitor<Path> fv = new FileVisitorImpl();
-      Files.walkFileTree(git.root(), fv);
+    try {
+      FileVisitor<Path> fv = new FileVisitorImpl(git);
+      Files.walkFileTree(Path.of("."), fv);
     } catch (IOException ex) {
-      System.err.println("Could not read the directory. Error: "  + ex.getMessage());
+      System.err.println("Could not read the directory. Error: " + ex.getMessage());
       return Command.EXIT_ERROR;
     }
     return Command.EXIT_SUCCESS;
   }
 
-  public static class FileVisitorImpl implements FileVisitor<Path> {
+  static class FileVisitorImpl implements FileVisitor<Path> {
 
-    private HashMap<Path, List<Path>> tree = new HashMap<>();
-    private GitTree t;
+    private final Git git;
+    private final HashMap<Path, List<GitTreeNode>> tree = new HashMap<>();
+
+    FileVisitorImpl(Git git) {
+      this.git = Objects.requireNonNull(git, "git must be not null.");
+    }
 
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+      if (dir.toAbsolutePath().normalize().equals(git.root())) {
+        System.out.println("Skipping Dir:" + dir.toAbsolutePath().normalize());
+        return FileVisitResult.SKIP_SIBLINGS;
+      }
       System.out.println("Pre visit dir:" + dir);
       tree.put(dir, new ArrayList<>());
       return FileVisitResult.CONTINUE;
@@ -51,7 +64,13 @@ public class WriteTreeCommand implements Command {
       tree.computeIfPresent(
           file.getParent(),
           (_, v) -> {
-            v.add(file);
+            try {
+              GitObject o = GitObject.create(git, file);
+              v.add(new GitTreeEntry("tree", file.toString(), o.hash().bytes()));
+            } catch (NoSuchAlgorithmException | IOException ex) {
+              System.err.println(
+                  "Cannot process file: " + file + ". Error message: " + ex.getMessage());
+            }
             return v;
           });
       return FileVisitResult.CONTINUE;
@@ -72,7 +91,17 @@ public class WriteTreeCommand implements Command {
           dir.getParent(),
           (k, v) -> {
             System.out.printf("Add tree %s to its parent %s%n", dir, k);
-            v.add(dir);
+
+//            GitTree.create()
+//
+
+
+//            try {
+//              v.add(new GitTreeEntry("tree", dir.toString(), o.hash().bytes()));
+//            } catch (NoSuchAlgorithmException | IOException ex) {
+//              System.err.println(
+//                  "Cannot process file: " + dir + ". Error message: " + ex.getMessage());
+//            }
             return v;
           });
       tree.remove(dir);

@@ -2,9 +2,9 @@ package git;
 
 import java.util.List;
 
-public interface TreeNode {
+public interface GitTreeNode {
   String type();
-  List<TreeNode> entries();
+  List<? extends GitTreeNode> entries();
   String hash();
   default String name() {
     return hash();
