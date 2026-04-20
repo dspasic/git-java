@@ -93,7 +93,11 @@ public class WriteTreeCommand implements Command {
         tree.computeIfPresent(
             dir.getParent(),
             (k, v) -> {
-              v.add(treeNode);
+              v.add(
+                  new GitTreeEntry(
+                      treeNode.mode(),
+                      dir.getFileName().toString(),
+                      treeNode.gitObject().hash().bytes()));
               return v;
             });
       } catch (NoSuchAlgorithmException e) {

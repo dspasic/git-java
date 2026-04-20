@@ -44,6 +44,8 @@ public class GitTree implements GitTreeNode {
 
     sb.insert(0, "tree %d\u0000".formatted(sb.length()));
 
+    System.out.println(sb);
+
     Hash hash = Hash.fromContent(sb.toString().getBytes());
 
     Path dirname = git.objects().resolve(hash.dirname());
@@ -57,7 +59,7 @@ public class GitTree implements GitTreeNode {
       Files.createFile(filename);
     }
 
-    Files.write(filename, hash.bytes());
+    Files.write(filename, ZlibCompressor.compress(hash.bytes()));
 
     return new GitTree(new GitObject(git, hash), entries);
   }
@@ -83,6 +85,10 @@ public class GitTree implements GitTreeNode {
   @Override
   public String hash() {
     return gitObject.hash().toString();
+  }
+
+  public GitObject gitObject() {
+    return gitObject;
   }
 
   @Override
