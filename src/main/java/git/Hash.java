@@ -5,43 +5,43 @@ import java.security.NoSuchAlgorithmException;
 
 public class Hash {
 
-  private final byte[] hashBytes;
+  private final byte[] sha;
 
-  public Hash(byte[] hashBytes) {
-    if (hashBytes.length != 20) {
+  public Hash(byte[] sha) {
+    if (sha.length != 20) {
       throw new IllegalArgumentException(
-          String.format("Invalid has length. Expected 20 got: %d", hashBytes.length));
+          String.format("Invalid has length. Expected 20 got: %d", sha.length));
     }
-    this.hashBytes = hashBytes;
+    this.sha = sha;
   }
 
-  public Hash(String hash) {
-    if (hash.length() != 40) {
+  public Hash(String sha) {
+    if (sha.length() != 40) {
       throw new IllegalArgumentException(
-          String.format("Invalid has length. Expected 40 got: %d", hash.length()));
+          String.format("Invalid has length. Expected 40 got: %d", sha.length()));
     }
-    if (!hash.matches("[a-fA-F0-9]+")) {
+    if (!sha.matches("[a-fA-F0-9]+")) {
       throw new IllegalArgumentException(
-          String.format("Invalid hash format: %s. Expected format: %s", hash, "[a-fA-F0-9]+"));
+          String.format("Invalid hash format: %s. Expected format: %s", sha, "[a-fA-F0-9]+"));
     }
-    this.hashBytes = toBytes(hash);
+    this.sha = toBytes(sha);
 
-    assert hash.equals(toHex(hashBytes));
+    assert sha.equals(toHex(this.sha));
   }
 
-  private String toHex(byte[] hashBytes) {
+  private String toHex(byte[] sha) {
     StringBuilder sb = new StringBuilder();
-    for (byte b : hashBytes) {
+    for (byte b : sha) {
       sb.append(String.format("%02x", b));
     }
     return sb.toString();
   }
 
-  private byte[] toBytes(String hash) {
+  private byte[] toBytes(String sha) {
     byte[] b = new byte[20];
-    for (int i = 0; i < hash.length(); i += 2) {
-      int high = Character.digit(hash.charAt(i), 16);
-      int low = Character.digit(hash.charAt(i + 1), 16);
+    for (int i = 0; i < sha.length(); i += 2) {
+      int high = Character.digit(sha.charAt(i), 16);
+      int low = Character.digit(sha.charAt(i + 1), 16);
       b[i / 2] = (byte) ((high << 4) | low);
     }
     return b;
@@ -49,16 +49,16 @@ public class Hash {
 
   public static Hash fromContent(byte[] content) throws NoSuchAlgorithmException {
     MessageDigest digest = MessageDigest.getInstance("SHA-1");
-    byte[] hash = digest.digest(content);
-    return new Hash(hash);
+    byte[] sha = digest.digest(content);
+    return new Hash(sha);
   }
 
   public String hash() {
-    return toHex(hashBytes);
+    return toHex(sha);
   }
 
   public byte[] bytes() {
-    return hashBytes;
+    return sha;
   }
 
   public String dirname() {
