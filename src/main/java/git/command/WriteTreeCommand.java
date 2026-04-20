@@ -66,7 +66,7 @@ public class WriteTreeCommand implements Command {
           (_, v) -> {
             try {
               GitObject o = GitObject.create(git, file);
-              v.add(new GitTreeEntry("tree", file.toString(), o.hash().bytes()));
+              v.add(new GitTreeEntry("blob", file.toString(), o.hash().bytes()));
             } catch (NoSuchAlgorithmException | IOException ex) {
               System.err.println(
                   "Cannot process file: " + file + ". Error message: " + ex.getMessage());

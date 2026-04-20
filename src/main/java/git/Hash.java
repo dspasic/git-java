@@ -5,7 +5,6 @@ import java.security.NoSuchAlgorithmException;
 
 public class Hash {
 
-  private final String hash;
   private final byte[] hashBytes;
 
   public Hash(byte[] hashBytes) {
@@ -14,7 +13,6 @@ public class Hash {
           String.format("Invalid has length. Expected 20 got: %d", hashBytes.length));
     }
     this.hashBytes = hashBytes;
-    this.hash = toHex(hashBytes);
   }
 
   public Hash(String hash) {
@@ -26,10 +24,9 @@ public class Hash {
       throw new IllegalArgumentException(
           String.format("Invalid hash format: %s. Expected format: %s", hash, "[a-fA-F0-9]+"));
     }
-    this.hash = hash;
     this.hashBytes = toBytes(hash);
 
-    assert this.hash.equals(toHex(hashBytes));
+    assert hash.equals(toHex(hashBytes));
   }
 
   private String toHex(byte[] hashBytes) {
@@ -45,7 +42,7 @@ public class Hash {
     for (int i = 0; i < hash.length(); i += 2) {
       int high = Character.digit(hash.charAt(i), 16);
       int low = Character.digit(hash.charAt(i + 1), 16);
-      b[i/2] = (byte) ((high << 4) | low);
+      b[i / 2] = (byte) ((high << 4) | low);
     }
     return b;
   }
@@ -57,7 +54,7 @@ public class Hash {
   }
 
   public String hash() {
-    return hash;
+    return toHex(hashBytes);
   }
 
   public byte[] bytes() {
@@ -65,15 +62,15 @@ public class Hash {
   }
 
   public String dirname() {
-    return hash.substring(0, 2);
+    return hash().substring(0, 2);
   }
 
   public String filename() {
-    return hash.substring(2);
+    return hash().substring(2);
   }
 
   @Override
   public String toString() {
-    return hash;
+    return hash();
   }
 }

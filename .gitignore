@@ -2,3 +2,8 @@
 target/
 .idea/
 *.iml
+
+## JDTLs settings
+.classpath
+.settings/
+.project
