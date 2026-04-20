@@ -15,7 +15,8 @@ public class GitTreeEntry implements GitTreeNode {
     this.hash = new Hash(Objects.requireNonNull(hash, "hash must not be null."));
   }
 
-  public String type() {
+  @Override
+  public String mode() {
     return mode;
   }
 

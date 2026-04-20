@@ -5,7 +5,6 @@ import git.GitObject;
 import git.GitTree;
 import git.GitTreeEntry;
 import git.GitTreeNode;
-
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
@@ -66,7 +65,7 @@ public class WriteTreeCommand implements Command {
           (_, v) -> {
             try {
               GitObject o = GitObject.create(git, file);
-              v.add(new GitTreeEntry("blob", file.toString(), o.hash().bytes()));
+              v.add(new GitTreeEntry("100644", file.getFileName().toString(), o.hash().bytes()));
             } catch (NoSuchAlgorithmException | IOException ex) {
               System.err.println(
                   "Cannot process file: " + file + ". Error message: " + ex.getMessage());
@@ -86,25 +85,27 @@ public class WriteTreeCommand implements Command {
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
       System.out.println("Post dir: " + dir);
       System.out.println("Creating tree with its entries: " + dir);
-      tree.getOrDefault(dir, new ArrayList<>()).forEach(System.out::println);
-      tree.computeIfPresent(
-          dir.getParent(),
-          (k, v) -> {
-            System.out.printf("Add tree %s to its parent %s%n", dir, k);
 
-//            GitTree.create()
-//
+      tree.getOrDefault(dir, List.of()).forEach((f) -> System.out.println(f.name()));
 
+      try {
+        GitTree treeNode = GitTree.create(git, tree.getOrDefault(dir, List.of()));
+        tree.computeIfPresent(
+            dir.getParent(),
+            (k, v) -> {
+              v.add(treeNode);
+              return v;
+            });
+      } catch (NoSuchAlgorithmException e) {
+        System.out.printf(
+            "Could not hash content for dir %s. Error: %s".formatted(dir, e.getMessage()));
+      } catch (IOException e) {
+        System.out.printf(
+            "Could write tree content for dir %s. Error: %s".formatted(dir, e.getMessage()));
+      }
 
-//            try {
-//              v.add(new GitTreeEntry("tree", dir.toString(), o.hash().bytes()));
-//            } catch (NoSuchAlgorithmException | IOException ex) {
-//              System.err.println(
-//                  "Cannot process file: " + dir + ". Error message: " + ex.getMessage());
-//            }
-            return v;
-          });
       tree.remove(dir);
+
       return FileVisitResult.CONTINUE;
     }
   }

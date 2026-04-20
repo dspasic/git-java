@@ -1,9 +1,14 @@
 package git;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 public class GitTree implements GitTreeNode {
 
@@ -19,7 +24,11 @@ public class GitTree implements GitTreeNode {
     this.entries.addAll(entries);
   }
 
-  public static GitTree create(List<? extends GitTreeNode> entries) {
+  public static GitTree create(Git git, List<? extends GitTreeNode> entries)
+      throws NoSuchAlgorithmException, IOException {
+    Objects.requireNonNull(git, "git must not be null.");
+    Objects.requireNonNull(entries, "entries must not be null.");
+
     if (entries.isEmpty()) {
       return null;
     }
@@ -30,12 +39,27 @@ public class GitTree implements GitTreeNode {
 
     for (GitTreeNode e : entries) {
       System.out.println(e);
-      sb.append("%s %s\u0000%s".formatted(e.type(), e.name(), e.hash()));
+      sb.append("%s %s\u0000%s".formatted(e.mode(), e.name(), e.hash()));
     }
 
-    System.out.println(sb.toString());
+    sb.insert(0, "tree %d\u0000".formatted(sb.length()));
 
-    return null;
+    Hash hash = Hash.fromContent(sb.toString().getBytes());
+
+    Path dirname = git.objects().resolve(hash.dirname());
+    Path filename = dirname.resolve(hash.filename());
+
+    if (!Files.exists(dirname)) {
+      Files.createDirectory(dirname);
+    }
+
+    if (!Files.exists(filename)) {
+      Files.createFile(filename);
+    }
+
+    Files.write(filename, hash.bytes());
+
+    return new GitTree(new GitObject(git, hash), entries);
   }
 
   public Long size() {
@@ -47,9 +71,13 @@ public class GitTree implements GitTreeNode {
     return Collections.unmodifiableList(entries);
   }
 
-  @Override
   public String type() {
     return gitObject.type();
+  }
+
+  @Override
+  public String mode() {
+    return "40000";
   }
 
   @Override
