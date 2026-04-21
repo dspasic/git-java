@@ -9,8 +9,8 @@ import java.util.Arrays;
 
 public class GitObject {
 
-  private final Hash hash;
   public final Git git;
+  private final Hash hash;
   private final Path path;
   private String type;
   private byte[] content;

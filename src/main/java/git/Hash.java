@@ -29,6 +29,12 @@ public class Hash {
     assert sha.equals(toHex(this.sha));
   }
 
+  public static Hash fromContent(byte[] content) throws NoSuchAlgorithmException {
+    MessageDigest digest = MessageDigest.getInstance("SHA-1");
+    byte[] sha = digest.digest(content);
+    return new Hash(sha);
+  }
+
   private String toHex(byte[] sha) {
     StringBuilder sb = new StringBuilder();
     for (byte b : sha) {
@@ -45,12 +51,6 @@ public class Hash {
       b[i / 2] = (byte) ((high << 4) | low);
     }
     return b;
-  }
-
-  public static Hash fromContent(byte[] content) throws NoSuchAlgorithmException {
-    MessageDigest digest = MessageDigest.getInstance("SHA-1");
-    byte[] sha = digest.digest(content);
-    return new Hash(sha);
   }
 
   public String hash() {
