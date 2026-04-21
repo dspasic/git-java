@@ -50,8 +50,8 @@ public class WriteTreeCommand implements Command {
 
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-      if (dir.toAbsolutePath().normalize().equals(git.root())) {
-        return FileVisitResult.SKIP_SIBLINGS;
+      if (dir.getFileName().toString().equals(git.root().getFileName().toString())) {
+        return FileVisitResult.SKIP_SUBTREE;
       }
       System.out.println("VISIT DIR: " + dir);
       tree.put(dir, new ArrayList<>());
