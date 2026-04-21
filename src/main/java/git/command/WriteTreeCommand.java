@@ -53,14 +53,14 @@ public class WriteTreeCommand implements Command {
       if (dir.getFileName().toString().equals(git.root().getFileName().toString())) {
         return FileVisitResult.SKIP_SUBTREE;
       }
-      System.out.println("VISIT DIR: " + dir);
+      // System.out.println("VISIT DIR: " + dir);
       tree.put(dir, new ArrayList<>());
       return FileVisitResult.CONTINUE;
     }
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-      System.out.println("VISIT FILE: " + file);
+      // System.out.println("VISIT FILE: " + file);
       tree.computeIfPresent(
           file.getParent(),
           (_, v) -> {
@@ -84,7 +84,7 @@ public class WriteTreeCommand implements Command {
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
       try {
-        System.out.println("WRITE FOR: " + dir);
+        // System.out.println("WRITE FOR: " + dir);
         tree.getOrDefault(dir, new ArrayList<>()).forEach((e) -> System.out.println("  FILE: " + e.name() + " " + e.hash()));
         GitTree treeNode = GitTreeWriter.write(git, tree.getOrDefault(dir, List.of()));
         if (treeNode != null) {
