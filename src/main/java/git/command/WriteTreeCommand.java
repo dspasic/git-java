@@ -81,8 +81,6 @@ public class WriteTreeCommand implements Command {
 
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
-      tree.getOrDefault(dir, List.of()).forEach((f) -> System.out.println(f.name()));
-
       try {
         GitTree treeNode = GitTreeWriter.write(git, tree.getOrDefault(dir, List.of()));
         tree.computeIfPresent(
@@ -95,6 +93,9 @@ public class WriteTreeCommand implements Command {
                       treeNode.gitObject().hash().bytes()));
               return v;
             });
+        if (!tree.containsKey(dir.getParent())) {
+          System.out.println(treeNode.hash());
+        }
       } catch (NoSuchAlgorithmException e) {
         System.out.printf(
             "Could not hash content for dir %s. Error: %s".formatted(dir, e.getMessage()));
