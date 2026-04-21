@@ -31,7 +31,7 @@ public class GitTreeEntry implements GitTreeNode {
   }
 
   @Override
-  public String hash() {
-    return new String(hash.bytes());
+  public Hash hash() {
+    return hash;
   }
 }

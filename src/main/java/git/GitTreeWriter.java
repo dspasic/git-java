@@ -1,9 +1,11 @@
 package git;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -21,18 +23,19 @@ public class GitTreeWriter {
 
     entries.sort(Comparator.comparing(GitTreeNode::name));
 
-    StringBuilder sb = new StringBuilder();
-
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
     for (GitTreeNode e : entries) {
-      var entry = "%s %s\u0000%s".formatted(e.mode(), e.name(), e.hash());
-      sb.append(entry);
+      String entryHeader = "%s %s\u0000".formatted(e.mode(), e.name());
+      baos.write(entryHeader.getBytes());
+      baos.write(e.hash().bytes());
     }
 
-    int size = sb.toString().getBytes().length;
+    byte[] treeHeader = "tree %d\u0000".formatted(baos.size()).getBytes();
+    byte[] entriesArray = baos.toByteArray();
+    byte[] content = new byte[treeHeader.length + baos.size()];
 
-    sb.insert(0, "tree %d\u0000".formatted(size));
-
-    byte[] content = sb.toString().getBytes();
+    System.arraycopy(treeHeader, 0, content, 0, treeHeader.length);
+    System.arraycopy(entriesArray, 0, content, treeHeader.length, entriesArray.length);
 
     Hash hash = Hash.fromContent(content);
 
@@ -43,7 +46,7 @@ public class GitTreeWriter {
       Files.createDirectory(dirname);
     }
 
-    Files.write(filename, ZlibCompressor.compress(sb.toString().getBytes()));
+    Files.write(filename, ZlibCompressor.compress(content));
 
     return new GitTree(new GitObject(git, hash), entries);
   }

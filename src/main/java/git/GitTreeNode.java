@@ -8,9 +8,7 @@ public interface GitTreeNode {
 
   List<? extends GitTreeNode> entries();
 
-  String hash();
+  Hash hash();
 
-  default String name() {
-    return hash();
-  }
+  String name();
 }

@@ -44,8 +44,8 @@ public class GitTree implements GitTreeNode {
   }
 
   @Override
-  public String hash() {
-    return gitObject.hash().toString();
+  public Hash hash() {
+    return gitObject.hash();
   }
 
   public GitObject gitObject() {
@@ -54,6 +54,6 @@ public class GitTree implements GitTreeNode {
 
   @Override
   public String name() {
-    return hash();
+    return hash().toString();
   }
 }
