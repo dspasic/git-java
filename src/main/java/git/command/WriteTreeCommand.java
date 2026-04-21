@@ -85,7 +85,7 @@ public class WriteTreeCommand implements Command {
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
       try {
         // System.out.println("WRITE FOR: " + dir);
-        tree.getOrDefault(dir, new ArrayList<>()).forEach((e) -> System.out.println("  FILE: " + e.name() + " " + e.hash()));
+        // tree.getOrDefault(dir, new ArrayList<>()).forEach((e) -> System.out.println("  FILE: " + e.name() + " " + e.hash()));
         GitTree treeNode = GitTreeWriter.write(git, tree.getOrDefault(dir, List.of()));
         if (treeNode != null) {
           tree.computeIfPresent(
