@@ -5,6 +5,8 @@ import git.GitObject;
 import git.GitTree;
 import git.GitTreeEntry;
 import git.GitTreeNode;
+import git.GitTreeWriter;
+
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
@@ -49,17 +51,14 @@ public class WriteTreeCommand implements Command {
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
       if (dir.toAbsolutePath().normalize().equals(git.root())) {
-        System.out.println("Skipping Dir:" + dir.toAbsolutePath().normalize());
         return FileVisitResult.SKIP_SIBLINGS;
       }
-      System.out.println("Pre visit dir:" + dir);
       tree.put(dir, new ArrayList<>());
       return FileVisitResult.CONTINUE;
     }
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-      System.out.println("Visit file:" + file);
       tree.computeIfPresent(
           file.getParent(),
           (_, v) -> {
@@ -77,19 +76,15 @@ public class WriteTreeCommand implements Command {
 
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) {
-      System.out.println("Visit failed:" + file + ". Here is why: " + exc.getMessage());
       return FileVisitResult.CONTINUE;
     }
 
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
-      System.out.println("Post dir: " + dir);
-      System.out.println("Creating tree with its entries: " + dir);
-
       tree.getOrDefault(dir, List.of()).forEach((f) -> System.out.println(f.name()));
 
       try {
-        GitTree treeNode = GitTree.create(git, tree.getOrDefault(dir, List.of()));
+        GitTree treeNode = GitTreeWriter.write(git, tree.getOrDefault(dir, List.of()));
         tree.computeIfPresent(
             dir.getParent(),
             (k, v) -> {

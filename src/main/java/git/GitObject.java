@@ -48,13 +48,14 @@ public class GitObject {
     gitObject.content = objectContent;
     gitObject.type = "blob";
     gitObject.size = fileSize;
-    gitObject.pos = gitObject.type.length() + gitObject.size.toString().length() +3;
+    gitObject.pos = gitObject.type.length() + gitObject.size.toString().length() + 3;
     gitObject.start = gitObject.pos;
 
     return gitObject;
   }
 
-  public static GitObject create(Git git, String path) throws IOException, NoSuchAlgorithmException {
+  public static GitObject create(Git git, String path)
+      throws IOException, NoSuchAlgorithmException {
     return create(git, Path.of(path));
   }
 
