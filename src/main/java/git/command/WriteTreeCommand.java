@@ -83,18 +83,20 @@ public class WriteTreeCommand implements Command {
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
       try {
         GitTree treeNode = GitTreeWriter.write(git, tree.getOrDefault(dir, List.of()));
-        tree.computeIfPresent(
-            dir.getParent(),
-            (k, v) -> {
-              v.add(
-                  new GitTreeEntry(
-                      treeNode.mode(),
-                      dir.getFileName().toString(),
-                      treeNode.gitObject().hash().bytes()));
-              return v;
-            });
-        if (!tree.containsKey(dir.getParent())) {
-          System.out.println(treeNode.hash());
+        if (treeNode != null) {
+          tree.computeIfPresent(
+              dir.getParent(),
+              (k, v) -> {
+                v.add(
+                    new GitTreeEntry(
+                        treeNode.mode(),
+                        dir.getFileName().toString(),
+                        treeNode.gitObject().hash().bytes()));
+                return v;
+              });
+          if (!tree.containsKey(dir.getParent())) {
+            System.out.println(treeNode.hash());
+          }
         }
       } catch (NoSuchAlgorithmException e) {
         System.out.printf(
