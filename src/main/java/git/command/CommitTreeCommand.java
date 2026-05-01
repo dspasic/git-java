@@ -25,9 +25,9 @@ public class CommitTreeCommand implements Command {
       return Command.EXIT_ERROR;
     }
 
-    String treeSha = args[2];
-    String commitSha = args[4];
-    String message = args[6];
+    String treeSha = args[1];
+    String commitSha = args[3];
+    String message = args[5];
 
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
