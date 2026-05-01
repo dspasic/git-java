@@ -3,13 +3,14 @@ package git.command;
 import git.Git;
 import git.GitObject;
 import git.Hash;
+import java.util.Objects;
 
 public class CatFileCommand implements Command {
 
   private final Git git;
 
   public CatFileCommand(Git git) {
-    this.git = git;
+    this.git = Objects.requireNonNull(git, "git must not be null.");
   }
 
   @Override

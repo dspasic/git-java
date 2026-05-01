@@ -3,6 +3,7 @@ import git.command.CatFileCommand;
 import git.command.HashObjectCommand;
 import git.command.InitCommand;
 import git.command.LsTreeCommand;
+import git.command.WriteCommitCommand;
 import git.command.WriteTreeCommand;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -34,6 +35,10 @@ public class Main {
       }
       case "write-tree" -> {
         var cmd = new WriteTreeCommand(git);
+        exitCode = cmd.execute(args);
+      }
+      case "write-commit" -> {
+        var cmd = new WriteCommitCommand(git);
         exitCode = cmd.execute(args);
       }
       case "help" -> {

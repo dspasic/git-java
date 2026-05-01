@@ -2,8 +2,6 @@ package git;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
 import java.util.List;
@@ -30,23 +28,13 @@ public class GitTreeWriter {
     }
 
     byte[] treeHeader = "tree %d\u0000".formatted(baos.size()).getBytes();
-    byte[] entriesArray = baos.toByteArray();
     byte[] content = new byte[treeHeader.length + baos.size()];
 
     System.arraycopy(treeHeader, 0, content, 0, treeHeader.length);
-    System.arraycopy(entriesArray, 0, content, treeHeader.length, entriesArray.length);
+    System.arraycopy(baos.toByteArray(), 0, content, treeHeader.length, baos.size());
 
-    Hash hash = Hash.fromContent(content);
+    GitObject object = git.writeObject(content);
 
-    Path dirname = git.objects().resolve(hash.dirname());
-    Path filename = dirname.resolve(hash.filename());
-
-    if (!Files.exists(dirname)) {
-      Files.createDirectory(dirname);
-    }
-
-    Files.write(filename, ZlibCompressor.compress(content));
-
-    return new GitTree(new GitObject(git, hash), entries);
+    return new GitTree(object, entries);
   }
 }

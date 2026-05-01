@@ -1,7 +1,9 @@
 package git;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
 
 public record Git(Path root, Path objects, Path refs, Path head) {
 
@@ -20,5 +22,16 @@ public record Git(Path root, Path objects, Path refs, Path head) {
         root.toAbsolutePath().resolve("objects"),
         root.toAbsolutePath().resolve("refs"),
         root.toAbsolutePath().resolve("HEAD"));
+  }
+
+  public GitObject writeObject(byte[] content) throws NoSuchAlgorithmException, IOException {
+    Hash sha = Hash.fromContent(content);
+    Path dir = objects.resolve(sha.dirname());
+    Path objectPath = dir.resolve(sha.filename());
+    if (!Files.exists(dir)) {
+      Files.createDirectory(dir);
+    }
+    Files.write(objectPath, ZlibCompressor.compress(content));
+    return new GitObject(this, sha);
   }
 }
