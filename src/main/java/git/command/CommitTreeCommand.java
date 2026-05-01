@@ -1,6 +1,7 @@
 package git.command;
 
 import git.Git;
+import git.GitObject;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -44,7 +45,8 @@ public class CommitTreeCommand implements Command {
       System.arraycopy(commitHeader, 0, content, 0, commitHeader.length);
       System.arraycopy(baos.toByteArray(), 0, content, commitHeader.length, baos.size());
 
-      git.writeObject(content);
+      GitObject object = git.writeObject(content);
+      System.out.println(object.hash());
     } catch (IOException ex) {
       System.err.println("Erorr while writting commit. Error: %s".formatted(ex.getMessage()));
       return Command.EXIT_ERROR;
