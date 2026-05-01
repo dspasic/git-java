@@ -1,9 +1,9 @@
 import git.Git;
 import git.command.CatFileCommand;
+import git.command.CommitTreeCommand;
 import git.command.HashObjectCommand;
 import git.command.InitCommand;
 import git.command.LsTreeCommand;
-import git.command.WriteCommitCommand;
 import git.command.WriteTreeCommand;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -37,8 +37,8 @@ public class Main {
         var cmd = new WriteTreeCommand(git);
         exitCode = cmd.execute(args);
       }
-      case "write-commit" -> {
-        var cmd = new WriteCommitCommand(git);
+      case "commit-tree" -> {
+        var cmd = new CommitTreeCommand(git);
         exitCode = cmd.execute(args);
       }
       case "help" -> {
@@ -49,6 +49,7 @@ public class Main {
         System.out.println("  cat-file -p <hash>");
         System.out.println("  ls-tree --name-only <hash>");
         System.out.println("  write-tree");
+        System.out.println("  commit-tree");
       }
       default -> {
         System.err.println("Unknown command: " + command);
