@@ -38,6 +38,7 @@ public class CommitTreeCommand implements Command {
       baos.write("author %s %s%n".formatted(AUTHOR, DATETIME).getBytes());
       baos.write("committer %s %s%n%n".formatted(COMMITTER, DATETIME).getBytes());
       baos.write(message.getBytes());
+      baos.write("\n".getBytes());
 
       byte[] commitHeader = "commit %d\u0000".formatted(baos.size()).getBytes();
       byte[] content = new byte[commitHeader.length + baos.size()];
