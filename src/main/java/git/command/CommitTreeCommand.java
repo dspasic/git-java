@@ -39,7 +39,7 @@ public class CommitTreeCommand implements Command {
       baos.write("committer %s %s%n%n".formatted(COMMITTER, DATETIME).getBytes());
       baos.write(message.getBytes());
 
-      byte[] commitHeader = "commit %n\u0000".formatted(baos.size()).getBytes();
+      byte[] commitHeader = "commit %d\u0000".formatted(baos.size()).getBytes();
       byte[] content = new byte[commitHeader.length + baos.size()];
 
       System.arraycopy(commitHeader, 0, content, 0, commitHeader.length);
@@ -47,11 +47,8 @@ public class CommitTreeCommand implements Command {
 
       GitObject object = git.writeObject(content);
       System.out.println(object.hash());
-    } catch (IOException ex) {
-      System.err.println("Erorr while writting commit. Error: %s".formatted(ex.getMessage()));
-      return Command.EXIT_ERROR;
-    } catch (NoSuchAlgorithmException ex) {
-      System.err.println("Erorr while writting commit. Error: %s".formatted(ex.getMessage()));
+    } catch (IOException | NoSuchAlgorithmException ex) {
+      System.err.printf("Error while writing commit. Error: %s%n", ex.getMessage());
       return Command.EXIT_ERROR;
     }
 
