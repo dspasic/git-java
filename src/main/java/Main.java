@@ -1,5 +1,6 @@
 import git.Git;
 import git.command.CatFileCommand;
+import git.command.CloneCommand;
 import git.command.CommitTreeCommand;
 import git.command.HashObjectCommand;
 import git.command.InitCommand;
@@ -19,6 +20,10 @@ public class Main {
     switch (command) {
       case "init" -> {
         var cmd = new InitCommand(git);
+        exitCode = cmd.execute(args);
+      }
+      case "clone" -> {
+        var cmd = new CloneCommand(git);
         exitCode = cmd.execute(args);
       }
       case "hash-object" -> {
