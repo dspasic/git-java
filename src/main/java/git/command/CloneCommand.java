@@ -17,20 +17,28 @@ public class CloneCommand implements Command {
 
   @Override
   public int execute(String[] args) {
-    System.out.println("Hello, Clone");
-
     if (args.length != 2) {
-      System.out.printf("Command must have 2 args. %d found. Given: %s%n", args.length, Arrays.toString(args));
+      System.out.printf(
+          "Command must have 2 args. %d found. Given: %s%n", args.length, Arrays.toString(args));
     }
 
     try {
       GitClient client = new GitClient(args[1]);
-      System.out.println(client.gitUploadPack());
+      String response = client.gitUploadPack();
+      String headerSha = determineHeaderSha(response);
+      System.out.println("HEADER SHA: " + headerSha);
     } catch (IOException | InterruptedException | URISyntaxException ex) {
-      System.err.printf("Error occurred while fetching git upload pack. Error: %s%n", ex.getMessage());
+      System.err.printf(
+          "Error occurred while fetching git upload pack. Error: %s%n", ex.getMessage());
       return EXIT_ERROR;
     }
 
     return EXIT_SUCCESS;
+  }
+
+  private String determineHeaderSha(String response) {
+    var startPos = 38;
+    var endPos = startPos + 40;
+    return response.substring(startPos, endPos);
   }
 }

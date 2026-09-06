@@ -47,7 +47,6 @@ public class Main {
         exitCode = cmd.execute(args);
       }
       case "help" -> {
-        System.out.println("Usage: git <command> [<args>]");
         System.out.println("Available commands:");
         System.out.println("  init");
         System.out.println("  hash-object -w <file>");
