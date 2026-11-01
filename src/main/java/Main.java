@@ -54,6 +54,7 @@ public class Main {
         System.out.println("  ls-tree --name-only <hash>");
         System.out.println("  write-tree");
         System.out.println("  commit-tree");
+        System.out.println("  clone <uri>");
       }
       default -> {
         System.err.println("Unknown command: " + command);

@@ -5,7 +5,9 @@ import git.GitClient;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 public class CloneCommand implements Command {
 
@@ -27,9 +29,14 @@ public class CloneCommand implements Command {
       String response = client.gitUploadPack();
       String headerSha = determineHeaderSha(response);
       System.out.println("HEADER SHA: " + headerSha);
+
+      Set<String> want = new HashSet<>();
+      want.add(headerSha);
+
+      byte[] packedResponse = client.requestFiles(want, new HashSet<>());
+      System.out.println(packedResponse);
     } catch (IOException | InterruptedException | URISyntaxException ex) {
-      System.err.printf(
-          "Error occurred while fetching git upload pack. Error: %s%n", ex.getMessage());
+      System.err.printf("Error occurred while cloning. Error: %s%n", ex.getMessage());
       return EXIT_ERROR;
     }
 
